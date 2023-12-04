@@ -1,6 +1,42 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+char* readShaderSource(const char* shaderPath)
+{
+    std::string shaderCode;
+    std::ifstream shaderFile;
+
+    shaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
+    try
+    {
+        // Open files
+        shaderFile.open(shaderPath);
+        std::stringstream shaderStream;
+
+        shaderStream << shaderFile.rdbuf();
+
+        // Close file handler
+        shaderFile.close();
+        shaderCode = shaderStream.str();
+    }
+    catch (std::ifstream::failure& e) 
+    {
+        std::cerr << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ: " << e.what() << std::endl;
+        return nullptr;
+    }
+
+    char* shaderSource = new char[shaderCode.size() + 1];
+    std::copy(shaderCode.begin(), shaderCode.end(), shaderSource);
+    shaderSource[shaderCode.size()] = '\0';
+
+    return shaderSource;
+}
+
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -98,37 +134,14 @@ int main()
 
     #pragma region shaders
 
-    const char* vertexShaderSource = "#version 330 core\n"
-        "layout (location = 0) in vec3 vPos;\n"
-        "uniform float time;\n"
-        "void main()\n"
-        "{\n"
-        "   float offset = cos(time*2);\n"
-        "   gl_Position = vec4(vPos.x * offset, vPos.y * offset, vPos.z * offset, 1.0);\n"
-        "}\0";
+    char* vertexShaderSource = readShaderSource("C:/Git Projects/LearnOpenGL/shaders/vertex_shader.glsl");
+    char* fragmentShaderBlueSource = readShaderSource("C:/Git Projects/LearnOpenGL/shaders/fragment_shader_1.glsl");
+    char* fragmentShaderRedSource = readShaderSource("C:/Git Projects/LearnOpenGL/shaders/fragment_shader_2.glsl");
 
     unsigned int vertexShader;
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glCompileShader(vertexShader);
-
-    const char* fragmentShaderBlueSource = "#version 330 core\n"
-        "out vec4 FragColor;\n"
-        "uniform float time;\n"
-        "void main()\n"
-        "{\n"
-            "float intensity = (cos(time)+1)/2;\n"
-        "   FragColor = vec4(0.5f, 0.5f, intensity, 1.0f);\n"
-        "}\0";
-
-    const char* fragmentShaderRedSource = "#version 330 core\n"
-        "out vec4 FragColor;\n"
-        "uniform float time;\n"
-        "void main()\n"
-        "{\n"
-        "float intensity = (cos(time)+1)/2;\n"
-        "   FragColor = vec4(intensity, 0.5f, 0.5f, 1.0f);\n"
-        "}\0";
 
     unsigned int fragmentShaderRed;
     fragmentShaderRed = glCreateShader(GL_FRAGMENT_SHADER);
@@ -163,7 +176,6 @@ int main()
         std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << blueFragmentInfoLog << std::endl;
     }
 
-
     unsigned int shaderProgramBlue;
     shaderProgramBlue = glCreateProgram();
     glAttachShader(shaderProgramBlue, vertexShader);
@@ -175,6 +187,10 @@ int main()
     glAttachShader(shaderProgramRed, vertexShader);
     glAttachShader(shaderProgramRed, fragmentShaderRed);
     glLinkProgram(shaderProgramRed);
+
+    delete vertexShaderSource;
+    delete fragmentShaderBlueSource;
+    delete fragmentShaderRedSource;
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShaderBlue);
