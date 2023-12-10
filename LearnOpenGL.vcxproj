@@ -147,9 +147,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Color.hpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Mesh.hpp" />
     <ClCompile Include="Shader.hpp" />
+    <ClCompile Include="Texture.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\fragment_shader.frag" />
@@ -158,6 +161,8 @@
   <ItemGroup>
     <ClInclude Include="stb_image.cpp" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="Vertex.hpp" />
+    <ClInclude Include="Window.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
