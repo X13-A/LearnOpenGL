@@ -4,7 +4,6 @@
 #include <string>
 #include <fstream>
 #include <sstream>
-#include <iostream>
 #include "Shader.hpp"
 #include "Texture.hpp"
 #include "stb_image.cpp"
@@ -12,18 +11,31 @@
 #include "Color.hpp"
 #include "Mesh.hpp"
 #include "Vertex.hpp"
+#include "performanceTracker.hpp"
+
+/// <summary>
+/// Use NVDIA GPU
+/// </summary>
+extern "C"
+{
+    __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
+}
 
 int main()
 {
     Window window = Window(800, 600, "CustomEngine");
+    PerformanceTracker performanceTracker;
+    performanceTracker.verbose = true;
+    performanceTracker.overrideTitle = true;
+
     #pragma region Vertices
 
     std::vector<Vertex> vertices =
     {
-        Vertex(glm::vec3(0.5f,  0.5f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f)),
-        Vertex(glm::vec3(0.5f, -0.5f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), glm::vec2(1.0f, 0.0f)),
-        Vertex(glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), glm::vec2(0.0f, 0.0f)),
-        Vertex(glm::vec3(-0.5f, 0.5f, 0.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 1.0f)),
+        Vertex(glm::vec4(0.5f,  0.5f, 0.0f, 1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f)),
+        Vertex(glm::vec4(0.5f, -0.5f, 0.0f, 1.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), glm::vec2(1.0f, 0.0f)),
+        Vertex(glm::vec4(-0.5f, -0.5f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), glm::vec2(0.0f, 0.0f)),
+        Vertex(glm::vec4(-0.5f, 0.5f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 1.0f)),
     };
 
     std::vector<unsigned int> indices = 
@@ -42,21 +54,21 @@ int main()
     {
         window.clear(Color(0.6, 0.6, 0.8, 1.0));
 
+        mesh.setRotation(glm::vec3(0, 0, sin(glfwGetTime()) * 180));
+        mesh.setPosition(glm::vec3(glm::sin(glfwGetTime()), glm::cos(glfwGetTime()), 0.0f));
+
         shader.use();
         shader.setFloat("time", glfwGetTime());
         shader.setInt("m_Texture1", 0);
         shader.setInt("m_Texture2", 1);
-
+        shader.setMat4("transform", mesh.transform);
         texture1.use(GL_TEXTURE0);
         texture2.use(GL_TEXTURE1);
 
-        mesh.use();
-        mesh.vertices[0].pos.x = glfwGetTime() / 10;
-        mesh.vertices[3].pos.x = -glfwGetTime() / 10;
-        mesh.updateBuffers();
 
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
+        mesh.draw();
 
+        performanceTracker.update(window.getWindow());
         window.update();
     }
     glfwTerminate();

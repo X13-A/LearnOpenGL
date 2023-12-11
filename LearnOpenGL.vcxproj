@@ -159,6 +159,7 @@
     <None Include="shaders\vertex_shader.vert" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="PerformanceTracker.hpp" />
     <ClInclude Include="stb_image.cpp" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="Vertex.hpp" />
