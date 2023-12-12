@@ -4,21 +4,24 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+
 #include "Shader.hpp"
 #include "Texture.hpp"
-#include "stb_image.cpp"
 #include "Window.hpp"
 #include "Color.hpp"
 #include "Mesh.hpp"
 #include "Vertex.hpp"
-#include "performanceTracker.hpp"
+#include "PerformanceTracker.hpp"
+#include "Camera.hpp"
+#include "stb_image.cpp"
 
 /// <summary>
-/// Use NVDIA GPU
+/// Use dedicated GPU
 /// </summary>
 extern "C"
 {
     __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
+    __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 }
 
 int main()
@@ -32,16 +35,42 @@ int main()
 
     std::vector<Vertex> vertices =
     {
-        Vertex(glm::vec4(0.5f,  0.5f, 0.0f, 1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f)),
-        Vertex(glm::vec4(0.5f, -0.5f, 0.0f, 1.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), glm::vec2(1.0f, 0.0f)),
-        Vertex(glm::vec4(-0.5f, -0.5f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), glm::vec2(0.0f, 0.0f)),
-        Vertex(glm::vec4(-0.5f, 0.5f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 1.0f)),
+        Vertex(glm::vec4(0.5f,  0.5f, 0.5f, 1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f)),
+        Vertex(glm::vec4(0.5f, -0.5f, 0.5f, 1.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), glm::vec2(1.0f, 0.0f)),
+        Vertex(glm::vec4(-0.5f, -0.5f, 0.5f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), glm::vec2(0.0f, 0.0f)),
+        Vertex(glm::vec4(-0.5f, 0.5f, 0.5f, 1.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 1.0f)),
+
+        Vertex(glm::vec4(0.5f, 0.5f, -0.5f, 1.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f)),
+        Vertex(glm::vec4(0.5f, -0.5f, -0.5f, 1.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 0.0f)),
+        Vertex(glm::vec4(-0.5f, -0.5f, -0.5f, 1.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 0.0f)),
+        Vertex(glm::vec4(-0.5f, 0.5f, -0.5f, 1.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 1.0f)),
     };
 
     std::vector<unsigned int> indices = 
     {
-        0, 1, 3,
-        1, 2, 3 
+        // Front face
+        0, 3, 1,
+        1, 3, 2,
+
+        // Back face
+        5, 6, 7,
+        7, 4, 5,
+
+        // Top face
+        0, 4, 7,
+        7, 3, 0,
+
+        // Bottom face
+        1, 6, 5,
+        1, 2, 6,
+
+        // Right face
+        5, 4, 0,
+        0, 1, 5,
+
+        // Left face
+        3, 7, 6,
+        6, 2, 3,
     };
     
     #pragma endregion
@@ -49,19 +78,22 @@ int main()
     Shader shader("shaders/vertex_shader.vert", "shaders/fragment_shader.frag");
     Texture texture1 = Texture("textures/fractal.jpg");
     Texture texture2 = Texture("textures/container.jpg");
+    Camera camera = Camera(45, window.getWidth() / window.getHeight(), 0.1f, 100.0f, glm::vec3(0, 0, -3));
+    glEnable(GL_DEPTH_TEST);
 
     while (!glfwWindowShouldClose(window.getWindow()))
     {
         window.clear(Color(0.6, 0.6, 0.8, 1.0));
 
-        mesh.setRotation(glm::vec3(0, 0, sin(glfwGetTime()) * 180));
-        mesh.setPosition(glm::vec3(glm::sin(glfwGetTime()), glm::cos(glfwGetTime()), 0.0f));
+        mesh.setRotation(glm::vec3(45, sin(glfwGetTime()) * 180, 0));
+        mesh.setPosition(glm::vec3(0, 0, glm::sin(glfwGetTime())));
 
         shader.use();
-        shader.setFloat("time", glfwGetTime());
         shader.setInt("m_Texture1", 0);
         shader.setInt("m_Texture2", 1);
-        shader.setMat4("transform", mesh.transform);
+        shader.setMat4("modelMatrix", mesh.transformMatrix);            //
+        shader.setMat4("viewMatrix", camera.viewMatrix);                //
+        shader.setMat4("projectionMatrix", camera.projectionMatrix);    //
         texture1.use(GL_TEXTURE0);
         texture2.use(GL_TEXTURE1);
 

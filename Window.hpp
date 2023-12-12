@@ -32,6 +32,16 @@ public:
         return window;
     }
 
+    unsigned int getWidth() const
+    {
+        return width;
+    }
+
+    unsigned int getHeight() const
+    {
+        return height;
+    }
+
     Window(unsigned int width, unsigned int height, const char* name)
 	{
         this->width = width;
@@ -62,7 +72,7 @@ public:
     void clear(Color color)
     {
         glClearColor(color.r, color.g, color.b, color.a);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
     void update()

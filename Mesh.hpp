@@ -16,7 +16,7 @@ class Mesh
 		glm::vec3 rotation;
 		std::vector<Vertex> vertices;
 		std::vector<unsigned int> indices;
-		glm::mat4 transform = glm::mat4(1.0f);
+		glm::mat4 transformMatrix = glm::mat4(1.0f);
 
 	private:
 		std::vector<float> verticesData;
@@ -74,7 +74,7 @@ class Mesh
 		void translate(const glm::vec3& offset) 
 		{
 			position += offset;
-			transform = glm::translate(glm::mat4(1.0f), offset) * transform;
+			transformMatrix = glm::translate(glm::mat4(1.0f), offset) * transformMatrix;
 			updateVBO();
 		}
 
@@ -82,7 +82,7 @@ class Mesh
 		{
 			float radians = glm::radians(degree);
 			rotation += radians * axis;
-			transform = glm::rotate(transform, radians, axis);
+			transformMatrix = glm::rotate(transformMatrix, radians, axis);
 			updateVBO();
 		}
 
@@ -94,13 +94,13 @@ class Mesh
 
 		void setRotation(const glm::vec3& newRotation) 
 		{
-			transform = glm::mat4(1.0f);
-			transform = glm::translate(transform, position);
+			transformMatrix = glm::mat4(1.0f);
+			transformMatrix = glm::translate(transformMatrix, position);
 
 			glm::vec3 rotationRadians = glm::radians(newRotation);
-			transform = glm::rotate(transform, rotationRadians.x, glm::vec3(1.0f, 0.0f, 0.0f)); // Rotate around x-axis
-			transform = glm::rotate(transform, rotationRadians.y, glm::vec3(0.0f, 1.0f, 0.0f)); // Rotate around y-axis
-			transform = glm::rotate(transform, rotationRadians.z, glm::vec3(0.0f, 0.0f, 1.0f)); // Rotate around z-axis
+			transformMatrix = glm::rotate(transformMatrix, rotationRadians.x, glm::vec3(1.0f, 0.0f, 0.0f)); // Rotate around x-axis
+			transformMatrix = glm::rotate(transformMatrix, rotationRadians.y, glm::vec3(0.0f, 1.0f, 0.0f)); // Rotate around y-axis
+			transformMatrix = glm::rotate(transformMatrix, rotationRadians.z, glm::vec3(0.0f, 0.0f, 1.0f)); // Rotate around z-axis
 
 			rotation = newRotation;
 			updateVBO();
