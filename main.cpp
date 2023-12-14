@@ -14,6 +14,8 @@
 #include "PerformanceTracker.hpp"
 #include "Camera.hpp"
 #include "stb_image.cpp"
+#include "InputManager.hpp"
+#include "Time.hpp"
 
 /// <summary>
 /// Use dedicated GPU
@@ -36,13 +38,13 @@ int main()
     std::vector<Vertex> vertices =
     {
         Vertex(glm::vec4(0.5f,  0.5f, 0.5f, 1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f)),
-        Vertex(glm::vec4(0.5f, -0.5f, 0.5f, 1.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), glm::vec2(1.0f, 0.0f)),
-        Vertex(glm::vec4(-0.5f, -0.5f, 0.5f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), glm::vec2(0.0f, 0.0f)),
+        Vertex(glm::vec4(0.25f, -0.5f, 0.25f, 1.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), glm::vec2(1.0f, 0.0f)),
+        Vertex(glm::vec4(-0.25f, -0.5f, 0.25f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), glm::vec2(0.0f, 0.0f)),
         Vertex(glm::vec4(-0.5f, 0.5f, 0.5f, 1.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 1.0f)),
 
         Vertex(glm::vec4(0.5f, 0.5f, -0.5f, 1.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f)),
-        Vertex(glm::vec4(0.5f, -0.5f, -0.5f, 1.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 0.0f)),
-        Vertex(glm::vec4(-0.5f, -0.5f, -0.5f, 1.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 0.0f)),
+        Vertex(glm::vec4(0.25f, -0.5f, -0.25f, 1.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 0.0f)),
+        Vertex(glm::vec4(-0.25f, -0.5f, -0.25f, 1.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 0.0f)),
         Vertex(glm::vec4(-0.5f, 0.5f, -0.5f, 1.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 1.0f)),
     };
 
@@ -78,25 +80,54 @@ int main()
     Shader shader("shaders/vertex_shader.vert", "shaders/fragment_shader.frag");
     Texture texture1 = Texture("textures/fractal.jpg");
     Texture texture2 = Texture("textures/container.jpg");
-    Camera camera = Camera(45, window.getWidth() / window.getHeight(), 0.1f, 100.0f, glm::vec3(0, 0, -3));
+    Camera camera = Camera(45, window.getWidth() / window.getHeight(), 0.1f, 100.0f, glm::vec3(0, 0, 3));
+    InputManager inputManager;
+
     glEnable(GL_DEPTH_TEST);
 
     while (!glfwWindowShouldClose(window.getWindow()))
     {
+        Time::update();
         window.clear(Color(0.6, 0.6, 0.8, 1.0));
+        inputManager.retrieveInputs(window.getWindow());
 
-        mesh.setRotation(glm::vec3(45, sin(glfwGetTime()) * 180, 0));
-        mesh.setPosition(glm::vec3(0, 0, glm::sin(glfwGetTime())));
+        float cameraSpeed = 5.0f;
+        if (inputManager.isKeyPressed(KeyboardKey::Space))
+        {
+            camera.translateLocal(glm::vec3(0, cameraSpeed * Time::deltaTime(), 0));
+        }
+        if (inputManager.isKeyPressed(KeyboardKey::LSHIFT))
+        {
+            camera.translateLocal(glm::vec3(0, -cameraSpeed * Time::deltaTime(), 0));
+        }
+        if (inputManager.isKeyPressed(KeyboardKey::A))
+        {
+            camera.translateLocal(glm::vec3(-cameraSpeed * Time::deltaTime(), 0, 0));
+        }
+        if (inputManager.isKeyPressed(KeyboardKey::D))
+        {
+            camera.translateLocal(glm::vec3(cameraSpeed * Time::deltaTime(), 0, 0));
+        }
+        if (inputManager.isKeyPressed(KeyboardKey::W))
+        {
+            camera.translateLocal(glm::vec3(0, 0, cameraSpeed * Time::deltaTime()));
+        }
+        if (inputManager.isKeyPressed(KeyboardKey::S))
+        {
+            camera.translateLocal(glm::vec3(0, 0, -cameraSpeed * Time::deltaTime()));
+        }
+
+        camera.setTarget(glm::vec3(0, 0, 0));
+        camera.update();
 
         shader.use();
         shader.setInt("m_Texture1", 0);
         shader.setInt("m_Texture2", 1);
-        shader.setMat4("modelMatrix", mesh.transformMatrix);            //
-        shader.setMat4("viewMatrix", camera.viewMatrix);                //
-        shader.setMat4("projectionMatrix", camera.projectionMatrix);    //
+        shader.setMat4("modelMatrix", mesh.transformMatrix);
+        shader.setMat4("viewMatrix", camera.viewMatrix);
+        shader.setMat4("projectionMatrix", camera.projectionMatrix);
         texture1.use(GL_TEXTURE0);
         texture2.use(GL_TEXTURE1);
-
 
         mesh.draw();
 

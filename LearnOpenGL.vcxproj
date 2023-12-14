@@ -160,9 +160,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.hpp" />
+    <ClInclude Include="InputManager.hpp" />
     <ClInclude Include="PerformanceTracker.hpp" />
     <ClInclude Include="stb_image.cpp" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="Time.hpp" />
     <ClInclude Include="Vertex.hpp" />
     <ClInclude Include="Window.hpp" />
   </ItemGroup>
