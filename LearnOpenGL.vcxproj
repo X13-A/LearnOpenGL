@@ -149,24 +149,34 @@
   <ItemGroup>
     <ClCompile Include="Color.hpp" />
     <ClCompile Include="glad.c" />
+    <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesh.hpp" />
     <ClCompile Include="Shader.hpp" />
     <ClCompile Include="Texture.hpp" />
+    <ClCompile Include="WindowManager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\fragment_shader.frag" />
-    <None Include="shaders\vertex_shader.vert" />
+    <None Include="shaders\sun.frag" />
+    <None Include="shaders\lit.frag" />
+    <None Include="shaders\lit.vert" />
+    <None Include="shaders\sun.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.hpp" />
+    <ClInclude Include="CameraControls.hpp" />
+    <ClInclude Include="Commons.hpp" />
+    <ClInclude Include="CreativeControls.hpp" />
     <ClInclude Include="InputManager.hpp" />
+    <ClInclude Include="LightMesh.hpp" />
+    <ClInclude Include="OrbitControls.hpp" />
     <ClInclude Include="PerformanceTracker.hpp" />
+    <ClInclude Include="Singleton.hpp" />
     <ClInclude Include="stb_image.cpp" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="Time.hpp" />
     <ClInclude Include="Vertex.hpp" />
-    <ClInclude Include="Window.hpp" />
+    <ClInclude Include="WindowManager.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -10,15 +10,16 @@ class Vertex
 		glm::vec4 pos;
 		glm::vec4 color;
 		glm::vec2 texCoord;
-		static const unsigned int dataSize = 10 * sizeof(float);
+		glm::vec3 normal;
+		static const unsigned int dataSize = 13 * sizeof(float);
 
-		Vertex(glm::vec4 pos, glm::vec4 color, glm::vec2 texCoord) : pos(pos), color(color), texCoord(texCoord)
+		Vertex(glm::vec4 pos, glm::vec4 color, glm::vec2 texCoord, glm::vec3 normal) : pos(pos), color(color), texCoord(texCoord), normal(glm::normalize(normal))
 		{
 		}
 
 		std::vector<float> data() const
 		{
-			return { pos.x, pos.y, pos.z, pos.w, color.r, color.g, color.b, color.a, texCoord.x, texCoord.y };
+			return { pos.x, pos.y, pos.z, pos.w, color.r, color.g, color.b, color.a, texCoord.x, texCoord.y, normal.x, normal.y, normal.z };
 		}
 
 		void translate(glm::vec3 offset)

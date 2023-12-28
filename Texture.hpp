@@ -1,7 +1,7 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
-#include <glad/glad.h>
+#include "Commons.hpp"
 #include <iostream>
 #include "stb_image.h"
 

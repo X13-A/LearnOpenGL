@@ -15,9 +15,9 @@ class Camera
 		glm::vec3 forward;
 		glm::vec3 up;
 		glm::vec3 right;
+		float fov;
 
 	public:
-		float fov;
 		glm::mat4 projectionMatrix;
 		glm::mat4 viewMatrix;
 
@@ -40,7 +40,25 @@ class Camera
 		/// </summary>
 		void setTarget(glm::vec3 target)
 		{
-			forward = glm::normalize(target - position);
+			setForward(target - position);
+		}
+
+		/// <summary>
+		/// Directly sets the forward vector of the camera
+		/// </summary>
+		void setForward(glm::vec3 forward)
+		{
+			this->forward = glm::normalize(forward);
+		}
+
+		float getFov()
+		{
+			return fov;
+		}
+
+		void setFov(float fov)
+		{
+			this->fov = fov;
 		}
 
 		/// <summary>
@@ -68,6 +86,11 @@ class Camera
 			viewMatrix = glm::lookAt(position, position + forward, up);
 		}
 
+		const glm::vec3& getPosition() const
+		{
+			return this->position;
+		}
+
 		/// <summary>
 		/// Updates the position of the camera
 		/// </summary>
@@ -92,15 +115,6 @@ class Camera
 			position += right * offset.x;
 			position += up * offset.y;
 			position += forward * offset.z;
-		}
-
-		/// <summary>
-		/// Updates the camera axes and matrices. Call this after rotating it.
-		/// </summary>
-		void update()
-		{
-			computeViewMatrix();
-			computeAxes();
 		}
 };
 

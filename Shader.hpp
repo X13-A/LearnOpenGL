@@ -1,8 +1,7 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#include <glad/glad.h>
-
+#include "Commons.hpp"
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -64,6 +63,16 @@ public:
     void setFloat(const std::string& name, float value) const
     {
         glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+    }
+
+    void setVec4(const std::string& name, glm::vec4 value) const
+    {
+        glUniform4f(glGetUniformLocation(ID, name.c_str()), value.r, value.g, value.b, value.a);
+    }
+
+    void setVec3(const std::string& name, glm::vec3 value) const
+    {
+        glUniform3f(glGetUniformLocation(ID, name.c_str()), value.r, value.g, value.b);
     }
 
     void setMat4(const std::string& name, glm::mat4 value)

@@ -1,13 +1,15 @@
 #ifndef INPUT_MANAGER_H
 #define INPUT_MANAGER_H
 
-#include <GLFW/glfw3.h>
+#include "Commons.hpp"
 #include <vector>
 #include <map>
+#include "Singleton.hpp"
+#include "CameraControls.hpp"
 
 enum class KeyboardKey { Escape, Enter, Space, LCTRL, LSHIFT, Tab, Backspace, Left, Right, Up, Down, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, KeysCount};
 
-class InputManager
+class InputManager : public Singleton<InputManager>
 {	
 	private:
 		std::vector<bool> keysPressed;
@@ -51,28 +53,18 @@ class InputManager
 			{GLFW_KEY_Y, KeyboardKey::Y},
 			{GLFW_KEY_Z, KeyboardKey::Z}
 		};
+		glm::vec2 lastMousePos;
+		bool firstMouseInput = true;
+		CameraControls* cameraControls;
 
 	public:
-
-		InputManager()
-		{
-			keysPressed.resize(static_cast<size_t>(KeyboardKey::KeysCount), false);
-		}
-
-		void retrieveInputs(GLFWwindow* window)
-		{
-			for (const std::pair<int, KeyboardKey> pair : keyMap)
-			{
-				if (pair.second == KeyboardKey::KeysCount) break;
-				bool keyPressed = glfwGetKey(window, pair.first) == GLFW_PRESS;
-				keysPressed.at(static_cast<size_t>(pair.second)) = keyPressed;
-			}
-		}
-
-		bool isKeyPressed(KeyboardKey key)
-		{
-			return keysPressed.at(static_cast<size_t>(key));
-		}
+		InputManager();
+		static void init(CameraControls* cameraControls);
+		void retrieveInputs();
+		void handleMouseMovement(float xpos, float ypos);
+		void handleScroll(float xoffset, float yoffset);
+		bool isKeyPressed(KeyboardKey key);
+		void update();
 };
 
 #endif

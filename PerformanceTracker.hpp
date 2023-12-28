@@ -1,22 +1,29 @@
 #ifndef PERFORMANCE_TRACKER_H
 #define PERFORMANCE_TRACKER_H
 
-#include <GLFW/glfw3.h>
+#include "Commons.hpp"
+#include "Singleton.hpp"
+
 using namespace std;
 
-class PerformanceTracker
+class PerformanceTracker : public Singleton<PerformanceTracker>
 {
 	private: 
 		float frameTime = 0;
 		float delay = 1;
+		float averageFPS;
 		std::size_t frames = 0;
 
 	public:
 		bool verbose = false;
 		bool overrideTitle = false;
-		float averageFPS;
 
-		void update(GLFWwindow* window)
+		float getAverageFPS()
+		{
+			return averageFPS;
+		}
+
+		void update()
 		{
 			++frames;
 
@@ -31,7 +38,8 @@ class PerformanceTracker
 				}
 				if (overrideTitle)
 				{
-					glfwSetWindowTitle(window, ("Average framerate: " + to_string((int)averageFPS)).c_str());
+					std::string title = "Average framerate: " + to_string((int) averageFPS);
+					WindowManager::getInstance().setTitle(title.c_str());
 				}
 				frameTime = glfwGetTime();
 			}

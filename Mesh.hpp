@@ -5,7 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <vector>
-#include <glad/glad.h>
+#include "Commons.hpp"
 #include "Vertex.hpp"
 #include <iostream>
 
@@ -28,6 +28,10 @@ class Mesh
 	public:
 		Mesh(glm::vec3 position, glm::vec3 rotation, std::vector<Vertex> vertices, std::vector<unsigned int> indices) : position(position), rotation(rotation), vertices(vertices), indices(indices)
 		{
+			// TODO: Translate and rotate vertices
+			setPosition(position);
+			setRotation(rotation);
+
 			// Init Vertex, Indice and Vertex Array objects
 			glGenBuffers(1, &VBO);
 			glGenBuffers(1, &EBO);
@@ -106,6 +110,16 @@ class Mesh
 			updateVBO();
 		}
 
+		void paint(glm::vec4 color)
+		{
+			for (int i = 0; i < vertices.size(); i++)
+			{
+				vertices[i].color = color;
+			}
+			use();
+			updateVBO();
+		}
+
 	private:
 
 		/// <summary>
@@ -116,9 +130,11 @@ class Mesh
 			glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, Vertex::dataSize, (void*)(0 * sizeof(float)));
 			glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, Vertex::dataSize, (void*)(4 * sizeof(float)));
 			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, Vertex::dataSize, (void*)(8 * sizeof(float)));
+			glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, Vertex::dataSize, (void*)(10 * sizeof(float)));
 			glEnableVertexAttribArray(0);
 			glEnableVertexAttribArray(1);
 			glEnableVertexAttribArray(2);
+			glEnableVertexAttribArray(3);
 		}
 
 		void updateVBO()
