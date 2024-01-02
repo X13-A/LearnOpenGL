@@ -82,7 +82,7 @@ int main()
 
 #pragma region Vertices
 
-    std::vector<Vertex> vertices2 = {
+    std::vector<Vertex> vertices = {
         // Front face
         Vertex(glm::vec4(-0.5f, -0.5f, -0.5f, 1.0f), WHITE, glm::vec2(0.0f, 0.0f), BACKWARDS),
         Vertex(glm::vec4(0.5f, -0.5f, -0.5f, 1.0f), WHITE, glm::vec2(1.0f, 0.0f), BACKWARDS),
@@ -131,7 +131,7 @@ int main()
         Vertex(glm::vec4(-0.5f, -0.5f,  0.5f, 1.0f), WHITE, glm::vec2(0.0f, 0.0f), DOWN),
         Vertex(glm::vec4(-0.5f, -0.5f, -0.5f, 1.0f), WHITE, glm::vec2(0.0f, 1.0f), DOWN)
     };
-    std::vector<unsigned int> indices2 =
+    std::vector<unsigned int> indices =
     {
         // Front face
         0, 1, 2,
@@ -158,7 +158,7 @@ int main()
         33, 34, 35,
     };
 
-    std::vector<Vertex> vertices =
+    std::vector<Vertex> vertices2 =
     {
         Vertex(glm::vec4(0.5f,  0.5f, 0.5f, 1.0f), WHITE, glm::vec2(1.0f, 1.0f), FORWARD + UP + RIGHT),
         Vertex(glm::vec4(0.5f, -0.5f, 0.5f, 1.0f), WHITE, glm::vec2(1.0f, 0.0f), FORWARD + DOWN + RIGHT),
@@ -170,7 +170,7 @@ int main()
         Vertex(glm::vec4(-0.5f, -0.5f, -0.5f, 1.0f), WHITE, glm::vec2(0.0f, 0.0f), BACKWARDS + DOWN + LEFT),
         Vertex(glm::vec4(-0.5f, 0.5f, -0.5f, 1.0f), WHITE, glm::vec2(0.0f, 1.0f), BACKWARDS + UP + LEFT),
     };
-    std::vector<unsigned int> indices =
+    std::vector<unsigned int> indices2 =
     {
         // Front face
         0, 3, 1,
@@ -211,14 +211,14 @@ int main()
     int n = 4;
     for (int i = 0; i < n; i++)
     {
-        meshes.push_back(Mesh(glm::vec3(-n + i * 2, 0.0f, 0.0f), glm::vec3(5.0f * i, 10.0f * i, 15.0f * i), vertices, indices)); // 
+        meshes.push_back(Mesh(glm::vec3(-n + i * 2, 0.0f, 0.0f), glm::vec3(5.0f * i, 10.0f * i, 15.0f * i), glm::vec3(1, 1, 1), vertices, indices)); // 
     }
     meshes[0].paint(RED);
     meshes[1].paint(BLUE);
     meshes[2].paint(GREEN);
     meshes[3].paint(WHITE);
 
-    LightMesh sun = LightMesh(WHITE, glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), vertices, indices);
+    LightMesh sun = LightMesh(WHITE, glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1, 1, 1), vertices, indices);
     Shader sunShader("shaders/sun.vert", "shaders/sun.frag");
     Shader lightShader("shaders/lit.vert", "shaders/lit.frag");
 
@@ -238,33 +238,34 @@ int main()
         InputManager::getInstance().update();
         WindowManager::getInstance().clear(Color(0, 0, 0, 0)); // Color(0.6, 0.6, 0.8, 1.0)
         float rotateRadius = 6;
-        //sun.setPosition(glm::vec3(glm::sin(glfwGetTime()) * rotateRadius, sun.position.y, sun.position.z));
-        //sun.setPosition(glm::vec3(sun.position.x, glm::cos(glfwGetTime()) * rotateRadius, sun.position.z));
-        //sun.setPosition(glm::vec3(sun.position.x, sun.position.y, glm::sin(glfwGetTime()) * rotateRadius));
+        sun.setPosition(glm::vec3(glm::sin(glfwGetTime()) * rotateRadius, sun.getPosition().y, sun.getPosition().z));
+        sun.setPosition(glm::vec3(sun.getPosition().x, glm::cos(glfwGetTime())* rotateRadius, sun.getPosition().z));
+        sun.setPosition(glm::vec3(sun.getPosition().x, sun.getPosition().y, glm::sin(glfwGetTime()) * rotateRadius));
         sun.lightColor = glm::vec4((glm::sin(glfwGetTime()) + 1) / 2, (glm::sin(glfwGetTime() + 10) + 1) / 2, (glm::sin(glfwGetTime() + 20) + 1) / 2, 1.0f);
         sun.paint(sun.lightColor);
-        control(sun, 5);
-        //cameraControls->update();
+
+        //control(sun, 5);
+        cameraControls->update();
 
         lightShader.use();
         lightShader.setInt("m_Texture", 0);
         lightShader.setVec4("lightColor", sun.lightColor);
-        lightShader.setVec4("ambientColor", WHITE * 0.0f);
-        lightShader.setMat4("modelMatrix", sun.transformMatrix);
+        lightShader.setVec4("ambientColor", WHITE * 0.2f);
+        lightShader.setMat4("modelMatrix", sun.getTransformMatrix());
         lightShader.setMat4("viewMatrix", camera.viewMatrix);
         lightShader.setMat4("projectionMatrix", camera.projectionMatrix);
-        lightShader.setVec3("lightPos", sun.position);
+        lightShader.setVec3("lightPos", sun.getPosition());
         texture1.use(GL_TEXTURE0);
 
         for (Mesh mesh : meshes)
         {
-            lightShader.setMat4("modelMatrix", mesh.transformMatrix);
+            lightShader.setMat4("modelMatrix", mesh.getTransformMatrix());
             mesh.draw();
         }
 
         sunTexture.use(GL_TEXTURE0);
         sunShader.use();
-        sunShader.setMat4("modelMatrix", sun.transformMatrix);
+        sunShader.setMat4("modelMatrix", sun.getTransformMatrix());
         sunShader.setMat4("viewMatrix", camera.viewMatrix);
         sunShader.setMat4("projectionMatrix", camera.projectionMatrix);
         sunShader.setInt("m_Texture", 0);
