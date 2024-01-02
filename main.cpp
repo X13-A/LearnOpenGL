@@ -213,7 +213,7 @@ int main()
     {
         meshes.push_back(Mesh(glm::vec3(-n + i * 2, 0.0f, 0.0f), glm::vec3(5.0f * i, 10.0f * i, 15.0f * i), glm::vec3(1, 1, 1), vertices, indices)); // 
     }
-    meshes[0].paint(RED);
+    meshes[0].paint(glm::vec4(0.8, 0.2, 0.2, 1.0));
     meshes[1].paint(BLUE);
     meshes[2].paint(GREEN);
     meshes[3].paint(WHITE);
@@ -238,23 +238,24 @@ int main()
         InputManager::getInstance().update();
         WindowManager::getInstance().clear(Color(0, 0, 0, 0)); // Color(0.6, 0.6, 0.8, 1.0)
         float rotateRadius = 6;
-        sun.setPosition(glm::vec3(glm::sin(glfwGetTime()) * rotateRadius, sun.getPosition().y, sun.getPosition().z));
-        sun.setPosition(glm::vec3(sun.getPosition().x, glm::cos(glfwGetTime())* rotateRadius, sun.getPosition().z));
-        sun.setPosition(glm::vec3(sun.getPosition().x, sun.getPosition().y, glm::sin(glfwGetTime()) * rotateRadius));
-        sun.lightColor = glm::vec4((glm::sin(glfwGetTime()) + 1) / 2, (glm::sin(glfwGetTime() + 10) + 1) / 2, (glm::sin(glfwGetTime() + 20) + 1) / 2, 1.0f);
-        sun.paint(sun.lightColor);
+        //sun.setPosition(glm::vec3(glm::sin(glfwGetTime()) * rotateRadius, sun.getPosition().y, sun.getPosition().z));
+        //sun.setPosition(glm::vec3(sun.getPosition().x, glm::cos(glfwGetTime())* rotateRadius, sun.getPosition().z));
+        //sun.setPosition(glm::vec3(sun.getPosition().x, sun.getPosition().y, glm::sin(glfwGetTime()) * rotateRadius));
+        //sun.setLightColor(glm::vec4((glm::sin(glfwGetTime()) + 1) / 2, (glm::sin(glfwGetTime() + 10) + 1) / 2, (glm::sin(glfwGetTime() + 20) + 1) / 2, 1.0f));
+        sun.paint(sun.getLightColor());
 
         //control(sun, 5);
         cameraControls->update();
 
         lightShader.use();
         lightShader.setInt("m_Texture", 0);
-        lightShader.setVec4("lightColor", sun.lightColor);
+        lightShader.setVec4("lightColor", sun.getLightColor());
         lightShader.setVec4("ambientColor", WHITE * 0.2f);
         lightShader.setMat4("modelMatrix", sun.getTransformMatrix());
         lightShader.setMat4("viewMatrix", camera.viewMatrix);
         lightShader.setMat4("projectionMatrix", camera.projectionMatrix);
         lightShader.setVec3("lightPos", sun.getPosition());
+        lightShader.setVec3("viewPos", camera.getPosition());
         texture1.use(GL_TEXTURE0);
 
         for (Mesh mesh : meshes)

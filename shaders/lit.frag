@@ -2,7 +2,7 @@
 out vec4 FragColor;
 
 in vec4 fragColor;
-in vec4 fragPos;
+in vec3 fragPos;
 in vec3 fragNormal;
 in vec2 fragTexCoord;
 
@@ -10,22 +10,26 @@ uniform sampler2D m_Texture;
 uniform vec4 lightColor;
 uniform vec4 ambientColor;
 uniform vec3 lightPos;
+uniform vec3 viewPos;
 
 void main()
 {
-    //FragColor = texture(m_Texture, fragTexCoord) * (ambientColor + fragColor * lightColor);
-    //float distX = distance(fragPos.x, lightPos.x);
-    //float distY = distance(fragPos.y, lightPos.y);
-    //float distZ = distance(fragPos.z, lightPos.z);
-    //FragColor = vec4(distX, distY, distZ, 1.0);
-    //FragColor = vec4(fragNormal.x, fragNormal.y, fragNormal.z, 1.0);
-
-    vec4 lightDir = normalize(vec4(lightPos, 1.0) - fragPos);
+    vec3 lightDir = normalize(lightPos - fragPos);
     vec3 normal = normalize(fragNormal);
 
-    float diffuseIntensity = max(dot(normal, vec3(lightDir)), 0.0);
+    // Diffuse
+    float diffuseIntensity = max(dot(normal, lightDir), 0.0);
     vec4 diffuseColor = lightColor * diffuseIntensity;
 
-    vec4 lightColor = (ambientColor + diffuseColor) * fragColor;
-    FragColor = texture(m_Texture, fragTexCoord) * lightColor;
+    // Specular
+    vec3 viewDir = normalize(viewPos - fragPos);
+    vec3 reflectionDir = reflect(-lightDir, normal);
+    float specularStrength = 0.5;
+    float specularIntensity = pow(max(dot(viewDir, reflectionDir), 0.0), 128);
+    vec4 specularColor = specularStrength * specularIntensity * lightColor;
+
+    // Mix
+    vec4 textureColor = texture(m_Texture, fragTexCoord);
+    vec4 lightColor = (ambientColor + diffuseColor + specularColor);
+    FragColor = fragColor * lightColor;
 }
