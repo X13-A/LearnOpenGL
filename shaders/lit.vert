@@ -1,5 +1,5 @@
 #version 330 core
-layout (location = 0) in vec4 vPos;
+layout (location = 0) in vec3 vPos;
 layout (location = 1) in vec4 vColor;
 layout (location = 2) in vec2 vTexCoord;
 layout (location = 3) in vec3 vNormal;
@@ -19,7 +19,7 @@ void main()
 
 	// Output
 	fragColor = vColor;
-	fragPos = vec3(modelMatrix * vPos);
+	fragPos = vec3(modelMatrix * vec4(vPos.xyz, 1.0));
 	fragNormal = mat3(transpose(inverse(modelMatrix))) * vNormal;  
 	fragTexCoord = vTexCoord;
 }

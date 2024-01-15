@@ -18,7 +18,10 @@
 #include "OrbitControls.hpp"
 #include "CreativeControls.hpp"
 #include "LightMesh.hpp"
+#include "Model.hpp"
 
+#include <assimp/cimport.h>
+#include <assimp/postprocess.h>
 
 static const glm::vec4 WHITE = glm::vec4(1, 1, 1, 1);
 static const glm::vec4 RED = glm::vec4(1, 0, 0, 1);
@@ -84,52 +87,52 @@ int main()
 
     std::vector<Vertex> vertices = {
         // Front face
-        Vertex(glm::vec4(-0.5f, -0.5f, -0.5f, 1.0f), WHITE, glm::vec2(0.0f, 0.0f), BACKWARDS),
-        Vertex(glm::vec4(0.5f, -0.5f, -0.5f, 1.0f), WHITE, glm::vec2(1.0f, 0.0f), BACKWARDS),
-        Vertex(glm::vec4(0.5f,  0.5f, -0.5f, 1.0f), WHITE, glm::vec2(1.0f, 1.0f), BACKWARDS),
-        Vertex(glm::vec4(0.5f,  0.5f, -0.5f, 1.0f), WHITE, glm::vec2(1.0f, 1.0f), BACKWARDS),
-        Vertex(glm::vec4(-0.5f,  0.5f, -0.5f, 1.0f), WHITE, glm::vec2(0.0f, 1.0f), BACKWARDS),
-        Vertex(glm::vec4(-0.5f, -0.5f, -0.5f, 1.0f), WHITE, glm::vec2(0.0f, 0.0f), BACKWARDS),
-
-        // Back face
-        Vertex(glm::vec4(-0.5f, -0.5f,  0.5f, 1.0f), WHITE, glm::vec2(0.0f, 0.0f), FORWARD),
-        Vertex(glm::vec4(0.5f, -0.5f,  0.5f, 1.0f), WHITE, glm::vec2(1.0f, 0.0f), FORWARD),
-        Vertex(glm::vec4(0.5f,  0.5f,  0.5f, 1.0f), WHITE, glm::vec2(1.0f, 1.0f), FORWARD),
-        Vertex(glm::vec4(0.5f,  0.5f,  0.5f, 1.0f), WHITE, glm::vec2(1.0f, 1.0f), FORWARD),
-        Vertex(glm::vec4(-0.5f,  0.5f,  0.5f, 1.0f), WHITE, glm::vec2(0.0f, 1.0f), FORWARD),
-        Vertex(glm::vec4(-0.5f, -0.5f,  0.5f, 1.0f), WHITE, glm::vec2(0.0f, 0.0f), FORWARD),
+        Vertex(glm::vec3(-0.5f, -0.5f, -0.5f), WHITE, glm::vec2(0.0f, 0.0f), BACKWARDS),
+        Vertex(glm::vec3(0.5f, -0.5f, -0.5f), WHITE, glm::vec2(1.0f, 0.0f), BACKWARDS),
+        Vertex(glm::vec3(0.5f,  0.5f, -0.5f), WHITE, glm::vec2(1.0f, 1.0f), BACKWARDS),
+        Vertex(glm::vec3(0.5f,  0.5f, -0.5f), WHITE, glm::vec2(1.0f, 1.0f), BACKWARDS),
+        Vertex(glm::vec3(-0.5f,  0.5f, -0.5f), WHITE, glm::vec2(0.0f, 1.0f), BACKWARDS),
+        Vertex(glm::vec3(-0.5f, -0.5f, -0.5f), WHITE, glm::vec2(0.0f, 0.0f), BACKWARDS),
+                       
+        // Back face   3
+        Vertex(glm::vec3(-0.5f, -0.5f,  0.5f), WHITE, glm::vec2(0.0f, 0.0f), FORWARD),
+        Vertex(glm::vec3(0.5f, -0.5f,  0.5f), WHITE, glm::vec2(1.0f, 0.0f), FORWARD),
+        Vertex(glm::vec3(0.5f,  0.5f,  0.5f), WHITE, glm::vec2(1.0f, 1.0f), FORWARD),
+        Vertex(glm::vec3(0.5f,  0.5f,  0.5f), WHITE, glm::vec2(1.0f, 1.0f), FORWARD),
+        Vertex(glm::vec3(-0.5f,  0.5f,  0.5f), WHITE, glm::vec2(0.0f, 1.0f), FORWARD),
+        Vertex(glm::vec3(-0.5f, -0.5f,  0.5f), WHITE, glm::vec2(0.0f, 0.0f), FORWARD),
 
         // Left face
-        Vertex(glm::vec4(-0.5f,  0.5f,  0.5f, 1.0f), WHITE, glm::vec2(1.0f, 0.0f), LEFT),
-        Vertex(glm::vec4(-0.5f,  0.5f, -0.5f, 1.0f), WHITE, glm::vec2(1.0f, 1.0f), LEFT),
-        Vertex(glm::vec4(-0.5f, -0.5f, -0.5f, 1.0f), WHITE, glm::vec2(0.0f, 1.0f), LEFT),
-        Vertex(glm::vec4(-0.5f, -0.5f, -0.5f, 1.0f), WHITE, glm::vec2(0.0f, 1.0f), LEFT),
-        Vertex(glm::vec4(-0.5f, -0.5f,  0.5f, 1.0f), WHITE, glm::vec2(0.0f, 0.0f), LEFT),
-        Vertex(glm::vec4(-0.5f,  0.5f,  0.5f, 1.0f), WHITE, glm::vec2(1.0f, 0.0f), LEFT),
+        Vertex(glm::vec3(-0.5f,  0.5f,  0.5f), WHITE, glm::vec2(1.0f, 0.0f), LEFT),
+        Vertex(glm::vec3(-0.5f,  0.5f, -0.5f), WHITE, glm::vec2(1.0f, 1.0f), LEFT),
+        Vertex(glm::vec3(-0.5f, -0.5f, -0.5f), WHITE, glm::vec2(0.0f, 1.0f), LEFT),
+        Vertex(glm::vec3(-0.5f, -0.5f, -0.5f), WHITE, glm::vec2(0.0f, 1.0f), LEFT),
+        Vertex(glm::vec3(-0.5f, -0.5f,  0.5f), WHITE, glm::vec2(0.0f, 0.0f), LEFT),
+        Vertex(glm::vec3(-0.5f,  0.5f,  0.5f), WHITE, glm::vec2(1.0f, 0.0f), LEFT),
 
         // Right face
-        Vertex(glm::vec4(0.5f,  0.5f,  0.5f, 1.0f), WHITE, glm::vec2(1.0f, 0.0f), RIGHT),
-        Vertex(glm::vec4(0.5f,  0.5f, -0.5f, 1.0f), WHITE, glm::vec2(1.0f, 1.0f), RIGHT),
-        Vertex(glm::vec4(0.5f, -0.5f, -0.5f, 1.0f), WHITE, glm::vec2(0.0f, 1.0f), RIGHT),
-        Vertex(glm::vec4(0.5f, -0.5f, -0.5f, 1.0f), WHITE, glm::vec2(0.0f, 1.0f), RIGHT),
-        Vertex(glm::vec4(0.5f, -0.5f,  0.5f, 1.0f), WHITE, glm::vec2(0.0f, 0.0f), RIGHT),
-        Vertex(glm::vec4(0.5f,  0.5f,  0.5f, 1.0f), WHITE, glm::vec2(1.0f, 0.0f), RIGHT),
-
-        // Top face
-        Vertex(glm::vec4(-0.5f, 0.5f, -0.5f, 1.0f), WHITE, glm::vec2(0.0f, 1.0f), UP),
-        Vertex(glm::vec4(0.5f, 0.5f, -0.5f, 1.0f), WHITE, glm::vec2(1.0f, 1.0f), UP),
-        Vertex(glm::vec4(0.5f, 0.5f,  0.5f, 1.0f), WHITE, glm::vec2(1.0f, 0.0f), UP),
-        Vertex(glm::vec4(0.5f, 0.5f,  0.5f, 1.0f), WHITE, glm::vec2(1.0f, 0.0f), UP),
-        Vertex(glm::vec4(-0.5f, 0.5f,  0.5f, 1.0f), WHITE, glm::vec2(0.0f, 0.0f), UP),
-        Vertex(glm::vec4(-0.5f, 0.5f, -0.5f, 1.0f), WHITE, glm::vec2(0.0f, 1.0f), UP),
-
-        // Bottom face
-        Vertex(glm::vec4(-0.5f, -0.5f, -0.5f, 1.0f), WHITE, glm::vec2(0.0f, 1.0f), DOWN),
-        Vertex(glm::vec4(0.5f, -0.5f, -0.5f, 1.0f), WHITE, glm::vec2(1.0f, 1.0f), DOWN),
-        Vertex(glm::vec4(0.5f, -0.5f,  0.5f, 1.0f), WHITE, glm::vec2(1.0f, 0.0f), DOWN),
-        Vertex(glm::vec4(0.5f, -0.5f,  0.5f, 1.0f), WHITE, glm::vec2(1.0f, 0.0f), DOWN),
-        Vertex(glm::vec4(-0.5f, -0.5f,  0.5f, 1.0f), WHITE, glm::vec2(0.0f, 0.0f), DOWN),
-        Vertex(glm::vec4(-0.5f, -0.5f, -0.5f, 1.0f), WHITE, glm::vec2(0.0f, 1.0f), DOWN)
+        Vertex(glm::vec3(0.5f,  0.5f,  0.5f), WHITE, glm::vec2(1.0f, 0.0f), RIGHT),
+        Vertex(glm::vec3(0.5f,  0.5f, -0.5f), WHITE, glm::vec2(1.0f, 1.0f), RIGHT),
+        Vertex(glm::vec3(0.5f, -0.5f, -0.5f), WHITE, glm::vec2(0.0f, 1.0f), RIGHT),
+        Vertex(glm::vec3(0.5f, -0.5f, -0.5f), WHITE, glm::vec2(0.0f, 1.0f), RIGHT),
+        Vertex(glm::vec3(0.5f, -0.5f,  0.5f), WHITE, glm::vec2(0.0f, 0.0f), RIGHT),
+        Vertex(glm::vec3(0.5f,  0.5f,  0.5f), WHITE, glm::vec2(1.0f, 0.0f), RIGHT),
+                       
+        // Top face    
+        Vertex(glm::vec3(-0.5f, 0.5f, -0.5f), WHITE, glm::vec2(0.0f, 1.0f), UP),
+        Vertex(glm::vec3(0.5f, 0.5f, -0.5f), WHITE, glm::vec2(1.0f, 1.0f), UP),
+        Vertex(glm::vec3(0.5f, 0.5f,  0.5f), WHITE, glm::vec2(1.0f, 0.0f), UP),
+        Vertex(glm::vec3(0.5f, 0.5f,  0.5f), WHITE, glm::vec2(1.0f, 0.0f), UP),
+        Vertex(glm::vec3(-0.5f, 0.5f,  0.5f), WHITE, glm::vec2(0.0f, 0.0f), UP),
+        Vertex(glm::vec3(-0.5f, 0.5f, -0.5f), WHITE, glm::vec2(0.0f, 1.0f), UP),
+                       
+        // Bottom face 
+        Vertex(glm::vec3(-0.5f, -0.5f, -0.5f), WHITE, glm::vec2(0.0f, 1.0f), DOWN),
+        Vertex(glm::vec3(0.5f, -0.5f, -0.5f), WHITE, glm::vec2(1.0f, 1.0f), DOWN),
+        Vertex(glm::vec3(0.5f, -0.5f,  0.5f), WHITE, glm::vec2(1.0f, 0.0f), DOWN),
+        Vertex(glm::vec3(0.5f, -0.5f,  0.5f), WHITE, glm::vec2(1.0f, 0.0f), DOWN),
+        Vertex(glm::vec3(-0.5f, -0.5f,  0.5f), WHITE, glm::vec2(0.0f, 0.0f), DOWN),
+        Vertex(glm::vec3(-0.5f, -0.5f, -0.5f), WHITE, glm::vec2(0.0f, 1.0f), DOWN)
     };
     std::vector<unsigned int> indices =
     {
@@ -160,15 +163,15 @@ int main()
 
     std::vector<Vertex> vertices2 =
     {
-        Vertex(glm::vec4(0.5f,  0.5f, 0.5f, 1.0f), WHITE, glm::vec2(1.0f, 1.0f), FORWARD + UP + RIGHT),
-        Vertex(glm::vec4(0.5f, -0.5f, 0.5f, 1.0f), WHITE, glm::vec2(1.0f, 0.0f), FORWARD + DOWN + RIGHT),
-        Vertex(glm::vec4(-0.5f, -0.5f, 0.5f, 1.0f), WHITE, glm::vec2(0.0f, 0.0f), FORWARD + DOWN + LEFT),
-        Vertex(glm::vec4(-0.5f, 0.5f, 0.5f, 1.0f), WHITE, glm::vec2(0.0f, 1.0f), FORWARD + UP + LEFT),
-
-        Vertex(glm::vec4(0.5f, 0.5f, -0.5f, 1.0f), WHITE, glm::vec2(1.0f, 1.0f), BACKWARDS + UP + RIGHT),
-        Vertex(glm::vec4(0.5f, -0.5f, -0.5f, 1.0f), WHITE, glm::vec2(1.0f, 0.0f), BACKWARDS + DOWN + RIGHT),
-        Vertex(glm::vec4(-0.5f, -0.5f, -0.5f, 1.0f), WHITE, glm::vec2(0.0f, 0.0f), BACKWARDS + DOWN + LEFT),
-        Vertex(glm::vec4(-0.5f, 0.5f, -0.5f, 1.0f), WHITE, glm::vec2(0.0f, 1.0f), BACKWARDS + UP + LEFT),
+        Vertex(glm::vec3(0.5f,  0.5f, 0.5f), WHITE, glm::vec2(1.0f, 1.0f), FORWARD + UP + RIGHT),
+        Vertex(glm::vec3(0.5f, -0.5f, 0.5f), WHITE, glm::vec2(1.0f, 0.0f), FORWARD + DOWN + RIGHT),
+        Vertex(glm::vec3(-0.5f, -0.5f, 0.5f), WHITE, glm::vec2(0.0f, 0.0f), FORWARD + DOWN + LEFT),
+        Vertex(glm::vec3(-0.5f, 0.5f, 0.5f), WHITE, glm::vec2(0.0f, 1.0f), FORWARD + UP + LEFT),
+                       
+        Vertex(glm::vec3(0.5f, 0.5f, -0.5f), WHITE, glm::vec2(1.0f, 1.0f), BACKWARDS + UP + RIGHT),
+        Vertex(glm::vec3(0.5f, -0.5f, -0.5f), WHITE, glm::vec2(1.0f, 0.0f), BACKWARDS + DOWN + RIGHT),
+        Vertex(glm::vec3(-0.5f, -0.5f, -0.5f), WHITE, glm::vec2(0.0f, 0.0f), BACKWARDS + DOWN + LEFT),
+        Vertex(glm::vec3(-0.5f, 0.5f, -0.5f), WHITE, glm::vec2(0.0f, 1.0f), BACKWARDS + UP + LEFT),
     };
     std::vector<unsigned int> indices2 =
     {
@@ -219,6 +222,7 @@ int main()
     meshes[3].paint(WHITE);
 
     LightMesh sun = LightMesh(WHITE, glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1, 1, 1), vertices, indices);
+    sun.scale(glm::vec3(0.25f, 0.25f, 0.25f));
     Shader sunShader("shaders/sun.vert", "shaders/sun.frag");
     Shader lightShader("shaders/lit.vert", "shaders/lit.frag");
 
@@ -230,6 +234,8 @@ int main()
     CreativeControls* cameraControls = new CreativeControls(camera, 3.0f, 0.1f);
     InputManager::init(cameraControls);
 
+    Model model = Model("./models/Cat2.obj");
+    
     glEnable(GL_DEPTH_TEST);
 
     while (!glfwWindowShouldClose(WindowManager::getInstance().getWindow()))
@@ -237,32 +243,35 @@ int main()
         Time::update();
         InputManager::getInstance().update();
         WindowManager::getInstance().clear(Color(0, 0, 0, 0)); // Color(0.6, 0.6, 0.8, 1.0)
-        float rotateRadius = 6;
-        //sun.setPosition(glm::vec3(glm::sin(glfwGetTime()) * rotateRadius, sun.getPosition().y, sun.getPosition().z));
-        //sun.setPosition(glm::vec3(sun.getPosition().x, glm::cos(glfwGetTime())* rotateRadius, sun.getPosition().z));
-        //sun.setPosition(glm::vec3(sun.getPosition().x, sun.getPosition().y, glm::sin(glfwGetTime()) * rotateRadius));
-        //sun.setLightColor(glm::vec4((glm::sin(glfwGetTime()) + 1) / 2, (glm::sin(glfwGetTime() + 10) + 1) / 2, (glm::sin(glfwGetTime() + 20) + 1) / 2, 1.0f));
+        float rotateRadius = 3;
+        sun.setPosition(glm::vec3(glm::sin(glfwGetTime()) * rotateRadius, sun.getPosition().y, sun.getPosition().z));
+        sun.setPosition(glm::vec3(sun.getPosition().x, glm::cos(glfwGetTime())* rotateRadius, sun.getPosition().z));
+        sun.setPosition(glm::vec3(sun.getPosition().x, sun.getPosition().y, glm::sin(glfwGetTime()) * rotateRadius));
+        sun.setLightColor(glm::vec4((glm::sin(glfwGetTime()) + 1) / 2, (glm::sin(glfwGetTime() + 10) + 1) / 2, (glm::sin(glfwGetTime() + 20) + 1) / 2, 1.0f));
         sun.paint(sun.getLightColor());
 
         //control(sun, 5);
         cameraControls->update();
 
+        glm::mat4 modelMatrix = glm::scale(glm::mat4(1), glm::vec3(0.25f, 0.25f, 0.25f));
+
         lightShader.use();
         lightShader.setInt("m_Texture", 0);
         lightShader.setVec4("lightColor", sun.getLightColor());
         lightShader.setVec4("ambientColor", WHITE * 0.2f);
-        lightShader.setMat4("modelMatrix", sun.getTransformMatrix());
+        lightShader.setMat4("modelMatrix", modelMatrix);
         lightShader.setMat4("viewMatrix", camera.viewMatrix);
         lightShader.setMat4("projectionMatrix", camera.projectionMatrix);
         lightShader.setVec3("lightPos", sun.getPosition());
         lightShader.setVec3("viewPos", camera.getPosition());
         texture1.use(GL_TEXTURE0);
+        model.draw();
 
-        for (Mesh mesh : meshes)
-        {
-            lightShader.setMat4("modelMatrix", mesh.getTransformMatrix());
-            mesh.draw();
-        }
+        //for (Mesh mesh : meshes)
+        //{
+        //    lightShader.setMat4("modelMatrix", mesh.getTransformMatrix());
+        //    mesh.draw();
+        //}
 
         sunTexture.use(GL_TEXTURE0);
         sunShader.use();

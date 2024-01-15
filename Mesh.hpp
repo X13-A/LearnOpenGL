@@ -8,6 +8,7 @@
 #include "Commons.hpp"
 #include "Vertex.hpp"
 #include <iostream>
+#include "Shader.hpp"
 
 class Mesh
 {
@@ -183,10 +184,10 @@ class Mesh
 		/// </summary>
 		void updateVertexAttributes()
 		{
-			glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, Vertex::dataSize, (void*)(0 * sizeof(float)));
-			glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, Vertex::dataSize, (void*)(4 * sizeof(float)));
-			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, Vertex::dataSize, (void*)(8 * sizeof(float)));
-			glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, Vertex::dataSize, (void*)(10 * sizeof(float)));
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(0 * sizeof(float)));
+			glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(3 * sizeof(float)));
+			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(7 * sizeof(float)));
+			glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(9 * sizeof(float)));
 			glEnableVertexAttribArray(0);
 			glEnableVertexAttribArray(1);
 			glEnableVertexAttribArray(2);
@@ -195,15 +196,14 @@ class Mesh
 
 		void updateVBO()
 		{
-			_verticesData = Vertex::concatenatedData(this->_vertices);
 			glBindBuffer(GL_ARRAY_BUFFER, _VBO);
-			glBufferData(GL_ARRAY_BUFFER, _vertices.size() * Vertex::dataSize, _verticesData.data(), GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, _vertices.size() * sizeof(Vertex), &_vertices[0], GL_STATIC_DRAW);
 		}
 
 		void updateEBO()
 		{
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _EBO);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indices.size() * sizeof(unsigned int), _indices.data(), GL_STATIC_DRAW);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indices.size() * sizeof(unsigned int), &_indices[0], GL_STATIC_DRAW);
 		}
 };
 
