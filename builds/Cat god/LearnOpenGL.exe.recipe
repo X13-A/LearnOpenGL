@@ -2,7 +2,7 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>C:\Git Projects\Graphics\LearnOpenGL\x64\Debug\LearnOpenGL.exe</FullPath>
+      <FullPath>C:\Git Projects\Graphics\LearnOpenGL\x64\Release\LearnOpenGL.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />
