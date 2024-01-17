@@ -50,27 +50,27 @@ void control(Mesh& mesh, float moveSpeed)
 {
     if (InputManager::getInstance().isKeyPressed(KeyboardKey::Space))
     {
-        mesh.translate(glm::vec3(0, moveSpeed * Time::deltaTime(), 0));
+        mesh.transform.translate(glm::vec3(0, moveSpeed * Time::deltaTime(), 0));
     }
     if (InputManager::getInstance().isKeyPressed(KeyboardKey::LSHIFT))
     {
-        mesh.translate(glm::vec3(0, -moveSpeed * Time::deltaTime(), 0));
+        mesh.transform.translate(glm::vec3(0, -moveSpeed * Time::deltaTime(), 0));
     }
     if (InputManager::getInstance().isKeyPressed(KeyboardKey::A))
     {
-        mesh.translate(glm::vec3(-moveSpeed * Time::deltaTime(), 0, 0));
+        mesh.transform.translate(glm::vec3(-moveSpeed * Time::deltaTime(), 0, 0));
     }
     if (InputManager::getInstance().isKeyPressed(KeyboardKey::D))
     {
-        mesh.translate(glm::vec3(moveSpeed * Time::deltaTime(), 0, 0));
+        mesh.transform.translate(glm::vec3(moveSpeed * Time::deltaTime(), 0, 0));
     }
     if (InputManager::getInstance().isKeyPressed(KeyboardKey::W))
     {
-        mesh.translate(glm::vec3(0, 0, moveSpeed * Time::deltaTime()));
+        mesh.transform.translate(glm::vec3(0, 0, moveSpeed * Time::deltaTime()));
     }
     if (InputManager::getInstance().isKeyPressed(KeyboardKey::S))
     {
-        mesh.translate(glm::vec3(0, 0, -moveSpeed * Time::deltaTime()));
+        mesh.transform.translate(glm::vec3(0, 0, -moveSpeed * Time::deltaTime()));
     }
 }
 
@@ -202,27 +202,8 @@ int main()
 
 #pragma endregion
 
-    std::vector<Mesh> meshes =
-    {
-        //Mesh(glm::vec3(-4.0f, 0.0f, 0.0f), glm::vec3(45.0f, 0.0f, 0.0f), vertices, indices),
-        //Mesh(glm::vec3(-2.0f, 0.0f, 0.0f), glm::vec3(90.0f, 0.0f, 0.0f), vertices, indices),
-        //Mesh(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 45.0f, 0.0f), vertices, indices),
-        //Mesh(glm::vec3(2.0f, 0.0f, 0.0f), glm::vec3(0.0f, 90.0f, 0.0f), vertices, indices),
-        //Mesh(glm::vec3(4.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 45.0f), vertices, indices),
-    };
-
-    int n = 4;
-    for (int i = 0; i < n; i++)
-    {
-        meshes.push_back(Mesh(glm::vec3(-n + i * 2, 0.0f, 0.0f), glm::vec3(5.0f * i, 10.0f * i, 15.0f * i), glm::vec3(1, 1, 1), vertices, indices)); // 
-    }
-    meshes[0].paint(glm::vec4(0.8, 0.2, 0.2, 1.0));
-    meshes[1].paint(BLUE);
-    meshes[2].paint(GREEN);
-    meshes[3].paint(WHITE);
-
     LightMesh sun = LightMesh(WHITE, glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1, 1, 1), vertices, indices);
-    sun.scale(glm::vec3(0.25f, 0.25f, 0.25f));
+    sun.transform.scale(glm::vec3(0.25f, 0.25f, 0.25f));
     Shader sunShader("shaders/sun.vert", "shaders/sun.frag");
     Shader lightShader("shaders/lit.vert", "shaders/lit.frag");
 
@@ -230,7 +211,7 @@ int main()
     Texture texture2 = Texture("textures/container.jpg");
     Texture sunTexture = Texture("textures/sun.jpg");
 
-    Camera camera = Camera(45, WindowManager::getInstance().getWidth() / WindowManager::getInstance().getHeight(), 0.1f, 100.0f, glm::vec3(0, 0, 3));
+    Camera camera = Camera(45, WindowManager::getInstance().getWidth() / WindowManager::getInstance().getHeight(), 0.1f, 1000.0f, glm::vec3(0, 0, 3));
     CreativeControls* cameraControls = new CreativeControls(camera, 3.0f, 0.1f);
     InputManager::init(cameraControls);
 
@@ -244,38 +225,45 @@ int main()
         InputManager::getInstance().update();
         WindowManager::getInstance().clear(Color(0, 0, 0, 0)); // Color(0.6, 0.6, 0.8, 1.0)
         float rotateRadius = 3;
-        sun.setPosition(glm::vec3(glm::sin(glfwGetTime()) * rotateRadius, sun.getPosition().y, sun.getPosition().z));
-        sun.setPosition(glm::vec3(sun.getPosition().x, glm::cos(glfwGetTime())* rotateRadius, sun.getPosition().z));
-        sun.setPosition(glm::vec3(sun.getPosition().x, sun.getPosition().y, glm::sin(glfwGetTime()) * rotateRadius));
+        sun.transform.setPosition(glm::vec3(glm::sin(glfwGetTime()) * rotateRadius, sun.transform.getPosition().y, sun.transform.getPosition().z));
+        sun.transform.setPosition(glm::vec3(sun.transform.getPosition().x, glm::cos(glfwGetTime())* rotateRadius, sun.transform.getPosition().z));
+        sun.transform.setPosition(glm::vec3(sun.transform.getPosition().x, sun.transform.getPosition().y, glm::sin(glfwGetTime()) * rotateRadius));
         sun.setLightColor(glm::vec4((glm::sin(glfwGetTime()) + 1) / 2, (glm::sin(glfwGetTime() + 10) + 1) / 2, (glm::sin(glfwGetTime() + 20) + 1) / 2, 1.0f));
         sun.paint(sun.getLightColor());
 
         //control(sun, 5);
         cameraControls->update();
 
-        glm::mat4 modelMatrix = glm::scale(glm::mat4(1), glm::vec3(0.25f, 0.25f, 0.25f));
-
+        texture1.use(GL_TEXTURE0);
         lightShader.use();
         lightShader.setInt("m_Texture", 0);
         lightShader.setVec4("lightColor", sun.getLightColor());
         lightShader.setVec4("ambientColor", WHITE * 0.2f);
-        lightShader.setMat4("modelMatrix", modelMatrix);
         lightShader.setMat4("viewMatrix", camera.viewMatrix);
         lightShader.setMat4("projectionMatrix", camera.projectionMatrix);
-        lightShader.setVec3("lightPos", sun.getPosition());
+        lightShader.setVec3("lightPos", sun.transform.getPosition());
         lightShader.setVec3("viewPos", camera.getPosition());
-        texture1.use(GL_TEXTURE0);
-        model.draw();
+        model.draw(lightShader);
 
-        //for (Mesh mesh : meshes)
+        //float caseSize = 20;
+        //int gridSize = 10;
+        //for (int x = 0; x < gridSize; x++)
         //{
-        //    lightShader.setMat4("modelMatrix", mesh.getTransformMatrix());
-        //    mesh.draw();
+        //    for (int y = 0; y < gridSize; y++)
+        //    {
+        //        for (int z = 0; z < gridSize; z++)
+        //        {
+        //            modelMatrix = glm::mat4(1);
+        //            modelMatrix = glm::translate(modelMatrix, glm::vec3(x * caseSize, y * caseSize, z * caseSize));
+        //            lightShader.setMat4("modelMatrix", modelMatrix);
+        //            model.draw();
+        //        }
+        //    }
         //}
 
         sunTexture.use(GL_TEXTURE0);
         sunShader.use();
-        sunShader.setMat4("modelMatrix", sun.getTransformMatrix());
+        sunShader.setMat4("modelMatrix", sun.transform.getTransformMatrix());
         sunShader.setMat4("viewMatrix", camera.viewMatrix);
         sunShader.setMat4("projectionMatrix", camera.projectionMatrix);
         sunShader.setInt("m_Texture", 0);

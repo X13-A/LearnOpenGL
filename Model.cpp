@@ -8,11 +8,81 @@ Model::Model(const std::string& path)
     loadModel(path);
 }
 
-void Model::draw()
+const glm::vec3& Model::getPosition() const
 {
-    for (unsigned int i = 0; i < meshes.size(); i++)
+    return _position;
+}
+
+const glm::vec3& Model::getRotation() const
+{
+    return _rotation;
+}
+
+const glm::vec3& Model::getScale() const
+{
+    return _scale;
+}
+
+void Model::setPosition(const glm::vec3& value)
+{
+    _position = value;
+    for (size_t i = 0; i < _meshes.size(); i++)
     {
-        meshes[i].draw();
+        _meshes[i]->transform.setPosition(value);
+    }
+}
+
+void Model::setRotation(const glm::vec3& value)
+{
+    _rotation = value;
+    for (size_t i = 0; i < _meshes.size(); i++)
+    {
+        _meshes[i]->transform.setRotation(value);
+    }
+}
+
+void Model::setScale(const glm::vec3& value)
+{
+    _scale = value;
+    for (size_t i = 0; i < _meshes.size(); i++)
+    {
+        _meshes[i]->transform.setScale(value);
+    }
+}
+
+void Model::translate(const glm::vec3& offset)
+{
+    _position += offset;
+    for (size_t i = 0; i < _meshes.size(); i++)
+    {
+        _meshes[i]->transform.translate(offset);
+    }
+}
+
+void Model::rotate(const glm::vec3& axis, const float& degree)
+{
+    _rotation = axis * degree;
+    for (size_t i = 0; i < _meshes.size(); i++)
+    {
+        _meshes[i]->transform.rotate(axis, degree);
+    }
+}
+
+void Model::scale(const glm::vec3& value)
+{
+    _scale *= value;
+    for (size_t i = 0; i < _meshes.size(); i++)
+    {
+        _meshes[i]->transform.scale(value);
+    }
+}
+
+void Model::draw(Shader& shader)
+{
+    for (unsigned int i = 0; i < _meshes.size(); i++)
+    {
+        shader.setMat4("modelMatrix", _meshes[i]->transform.getTransformMatrix());
+        _meshes[i]->draw();
     }
 }
 
@@ -26,7 +96,7 @@ void Model::loadModel(const std::string& path)
         std::cout << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
         return;
     }
-    directory = path.substr(0, path.find_last_of('/'));
+    _directory = path.substr(0, path.find_last_of('/'));
 
     processNode(scene->mRootNode, scene);
 }
@@ -37,7 +107,7 @@ void Model::processNode(aiNode* node, const aiScene* scene)
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        meshes.push_back(processMesh(mesh, scene));
+        _meshes.push_back(processMesh(mesh, scene));
     }
     // do the same for each of its children
     for (unsigned int i = 0; i < node->mNumChildren; i++)
@@ -46,7 +116,7 @@ void Model::processNode(aiNode* node, const aiScene* scene)
     }
 }
 
-Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
+Mesh* Model::processMesh(aiMesh* mesh, const aiScene* scene)
 {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
@@ -93,7 +163,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
         textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
     }
 
-    return Mesh(glm::vec3(), glm::vec3(), glm::vec3(1, 1, 1), vertices, indices);
+    return new Mesh(glm::vec3(), glm::vec3(), glm::vec3(1, 1, 1), vertices, indices);
 }
 
 std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)

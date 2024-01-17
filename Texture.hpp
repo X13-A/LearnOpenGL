@@ -44,5 +44,24 @@ public:
         }
         stbi_image_free(data);
 	}
+
+public:
+    enum Type { Diffuse, Specular };
+
+    static std::string typeToString(Type t)
+    {
+        switch (t)
+        {
+        case Texture::Diffuse:
+            return "texture_diffuse";
+            break;
+        case Texture::Specular:
+            return "texture_specular";
+            break;
+        default:
+            return "unknown";
+            break;
+        }
+    }
 };
 #endif
