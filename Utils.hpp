@@ -12,6 +12,11 @@ namespace Utils
 	{
 		return std::vector<T>(vec);
 	}
+
+	static void printVec3(const glm::vec3 vec)
+	{
+		std::cout << "[" << vec.x << ", " << vec.y << ", " << vec.z << "]";
+	}
 }
 
 #endif

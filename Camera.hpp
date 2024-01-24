@@ -51,7 +51,12 @@ class Camera
 			this->forward = glm::normalize(forward);
 		}
 
-		float getFov()
+		const glm::vec3& getForward() const
+		{
+			return forward;
+		}
+
+		const float& getFov() const
 		{
 			return fov;
 		}
