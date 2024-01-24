@@ -7,6 +7,7 @@
 
 Transform::Transform(const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale) : _transformMatrix(glm::mat4(1.0f)), _position(position), _rotation(rotation), _scale(scale)
 {
+	_mesh = NULL;
 	setPosition(position);
 	setRotation(rotation);
 	setScale(scale);

@@ -2,6 +2,8 @@
 #define TRANSFORM_HPP
 
 #include <glm/glm.hpp>
+#include <memory>
+
 class Mesh;
 
 class Transform

@@ -28,7 +28,7 @@ class Model
 
 
     private:
-        std::vector<Mesh*> _meshes;
+        std::vector<std::shared_ptr<Mesh>> _meshes;
         std::string _directory;
         glm::vec3 _position;
         glm::vec3 _rotation;
@@ -36,7 +36,7 @@ class Model
 
         void loadModel(const std::string& path);
         void processNode(aiNode* node, const aiScene* scene);
-        Mesh* processMesh(aiMesh* mesh, const aiScene* scene);
+        std::shared_ptr<Mesh> processMesh(aiMesh* mesh, const aiScene* scene);
         std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
 };
 #endif

@@ -150,6 +150,7 @@
     <ClCompile Include="Color.hpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="InputManager.cpp" />
+    <ClCompile Include="Light.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesh.hpp" />
     <ClCompile Include="Model.cpp" />
@@ -159,6 +160,8 @@
     <ClCompile Include="WindowManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\cloud.frag" />
+    <None Include="shaders\cloud.vert" />
     <None Include="shaders\sun.frag" />
     <None Include="shaders\lit.frag" />
     <None Include="shaders\lit.vert" />
@@ -170,7 +173,7 @@
     <ClInclude Include="Commons.hpp" />
     <ClInclude Include="CreativeControls.hpp" />
     <ClInclude Include="InputManager.hpp" />
-    <ClInclude Include="LightMesh.hpp" />
+    <ClInclude Include="Light.hpp" />
     <ClInclude Include="Model.hpp" />
     <ClInclude Include="OrbitControls.hpp" />
     <ClInclude Include="PerformanceTracker.hpp" />

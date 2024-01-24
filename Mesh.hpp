@@ -11,8 +11,9 @@
 #include "Shader.hpp"
 #include "Utils.hpp"
 #include "Transform.hpp"
+#include <memory>
 
-class Mesh
+class Mesh : public std::enable_shared_from_this<Mesh>
 {
 	private:
 		std::vector<Vertex> _vertices;

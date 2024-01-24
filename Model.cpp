@@ -6,6 +6,9 @@
 Model::Model(const std::string& path)
 {
     loadModel(path);
+    _scale = glm::vec3(1, 1, 1);
+    _position = glm::vec3(0, 0, 0);
+    _rotation = glm::vec3(0, 0, 0);
 }
 
 const glm::vec3& Model::getPosition() const
@@ -116,7 +119,7 @@ void Model::processNode(aiNode* node, const aiScene* scene)
     }
 }
 
-Mesh* Model::processMesh(aiMesh* mesh, const aiScene* scene)
+std::shared_ptr<Mesh> Model::processMesh(aiMesh* mesh, const aiScene* scene)
 {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
@@ -163,7 +166,7 @@ Mesh* Model::processMesh(aiMesh* mesh, const aiScene* scene)
         textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
     }
 
-    return new Mesh(glm::vec3(), glm::vec3(), glm::vec3(1, 1, 1), vertices, indices);
+    return std::make_shared<Mesh>(glm::vec3(), glm::vec3(), glm::vec3(1, 1, 1), vertices, indices);
 }
 
 std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)

@@ -48,6 +48,9 @@
     <ClCompile Include="Transform.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="Light.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\sun.frag">
@@ -60,6 +63,12 @@
       <Filter>Fichiers sources\Shaders</Filter>
     </None>
     <None Include="shaders\lit.vert">
+      <Filter>Fichiers sources\Shaders</Filter>
+    </None>
+    <None Include="shaders\cloud.frag">
+      <Filter>Fichiers sources\Shaders</Filter>
+    </None>
+    <None Include="shaders\cloud.vert">
       <Filter>Fichiers sources\Shaders</Filter>
     </None>
   </ItemGroup>
@@ -103,9 +112,6 @@
     <ClInclude Include="Commons.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="LightMesh.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="Model.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
@@ -113,6 +119,9 @@
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="Transform.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Light.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>
