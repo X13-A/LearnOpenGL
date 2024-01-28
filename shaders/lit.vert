@@ -15,7 +15,7 @@ out vec3 fragNormal;
 
 void main()
 {
-	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vPos.xyz, 1.0);
+	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vPos, 1.0);
 
 	// Output
 	fragColor = vColor;

@@ -1,10 +1,12 @@
 #version 330 core
 out vec4 FragColor;
 in vec3 fragPos;
+in vec4 fragClipPos;
 
 uniform vec3 boundsMin;
 uniform vec3 boundsMax;
 uniform vec3 cameraPos;
+uniform sampler2D mainTex;
 
 vec2 rayBoxDst(vec3 boundsMin, vec3 boundsMax, vec3 rayOrigin, vec3 rayDir)
 {
@@ -23,6 +25,9 @@ vec2 rayBoxDst(vec3 boundsMin, vec3 boundsMax, vec3 rayOrigin, vec3 rayDir)
 
 void main()
 {
+    vec3 ndcPos = fragClipPos.xyz / fragClipPos.w;
+	vec2 fragScreenPos = ndcPos.xy * 0.5 + 0.5;
+	
 	vec4 col = vec4(0, 0, 0, 0);
 	vec3 rayOrigin = cameraPos;
 	vec3 rayDir = normalize(fragPos - rayOrigin);
@@ -33,7 +38,9 @@ void main()
 	
 	if (dstInsideBox > 0)
 	{
-		FragColor = vec4(1, 1, 1, dstInsideBox);
+		vec4 res = texture(mainTex, fragScreenPos);
+		res += vec4(dstInsideBox, dstInsideBox, dstInsideBox, 0);
+		FragColor = res;
 	}
 	else
 	{

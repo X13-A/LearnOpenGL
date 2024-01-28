@@ -71,6 +71,18 @@
     <None Include="shaders\cloud.vert">
       <Filter>Fichiers sources\Shaders</Filter>
     </None>
+    <None Include="shaders\screen.frag">
+      <Filter>Fichiers sources\Shaders</Filter>
+    </None>
+    <None Include="shaders\screen.vert">
+      <Filter>Fichiers sources\Shaders</Filter>
+    </None>
+    <None Include="shaders\sampleTex.frag">
+      <Filter>Fichiers sources\Shaders</Filter>
+    </None>
+    <None Include="shaders\sampleTex.vert">
+      <Filter>Fichiers sources\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stb_image.cpp">

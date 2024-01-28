@@ -162,6 +162,10 @@
   <ItemGroup>
     <None Include="shaders\cloud.frag" />
     <None Include="shaders\cloud.vert" />
+    <None Include="shaders\sampleTex.frag" />
+    <None Include="shaders\sampleTex.vert" />
+    <None Include="shaders\screen.frag" />
+    <None Include="shaders\screen.vert" />
     <None Include="shaders\sun.frag" />
     <None Include="shaders\lit.frag" />
     <None Include="shaders\lit.vert" />
