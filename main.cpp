@@ -114,7 +114,7 @@ int main()
     Texture texture2 = Texture("textures/container.jpg");
     Texture sunTexture = Texture("textures/sun.jpg");
 
-    Camera camera = Camera(45, WindowManager::getInstance().getWidth() / WindowManager::getInstance().getHeight(), 0.1f, 100.0f, glm::vec3(0, 0, 5));
+    Camera camera = Camera(45, WindowManager::getInstance().getWidth() / WindowManager::getInstance().getHeight(), 0.1f, 100000.0f, glm::vec3(0, 0, 5));
     CreativeControls* cameraControls = new CreativeControls(camera, 3.0f, 0.1f);
     InputManager::init(cameraControls);
     camera.translateGlobal(glm::vec3(0.5f, 0.5f, 0.5f));
@@ -124,19 +124,24 @@ int main()
 
     Model cloud = Model("./models/Cube.obj");
     cloud.translate(glm::vec3(0.5f));
-    cloud.scale(glm::vec3(10, 3, 10));
+    cloud.scale(glm::vec3(100, 0.5, 100));
     FrameBuffer frameBuffer;
     frameBuffer.setup();
 
     CloudNoiseGenerator generator;
     GLuint points_n = 5;
+    GLuint worleyRes = 128;
     std::vector<glm::vec3> worleyPoints = generator.RepeatWorleyPoints(generator.CreateWorleyPoints(points_n));
-    GLuint worleyTexture = generator.ComputeWorleyTexture(worleyPoints, 256);
+    GLuint worleyTexture = generator.ComputeWorleyTexture(worleyPoints, worleyRes);
     
+    Model pointModel = Model("./models/Sphere.obj");
+    pointModel.scale(glm::vec3(0.05, 0.05, 0.05));
+
     glEnable(GL_DEPTH_TEST);
     while (!glfwWindowShouldClose(WindowManager::getInstance().getWindow()))
     {
         Color clearColor = Color(0.6, 0.6, 0.8, 1.0);
+        //clearColor = Color(0, 0, 0, 1);
         Time::update();
         InputManager::getInstance().update();
         WindowManager::getInstance().clear(clearColor);  // Color(0.6, 0.6, 0.8, 1.0)
@@ -144,13 +149,13 @@ int main()
 
         if (InputManager::getInstance().isKeyPressed(KeyboardKey::G))
         {
-            worleyPoints = generator.RepeatWorleyPoints(generator.CreateWorleyPointsGrid(2));
-            worleyTexture = generator.ComputeWorleyTexture(worleyPoints, 256);
+            worleyPoints = generator.RepeatWorleyPoints(generator.CreateWorleyPointsGrid(3));
+            worleyTexture = generator.ComputeWorleyTexture(worleyPoints, worleyRes);
         }
         else if (InputManager::getInstance().isKeyPressed(KeyboardKey::F))
         {
             worleyPoints = generator.RepeatWorleyPoints(generator.CreateWorleyPoints(points_n));
-            worleyTexture = generator.ComputeWorleyTexture(worleyPoints, 256);
+            worleyTexture = generator.ComputeWorleyTexture(worleyPoints, worleyRes);
         }
 
         frameBuffer.use();
@@ -163,16 +168,33 @@ int main()
         light.transform.setPosition(glm::vec3(glm::sin(glfwGetTime()) * rotateRadius, glm::cos(glfwGetTime()) * rotateRadius, glm::sin(glfwGetTime()) * rotateRadius));
         light.setColor(glm::vec4((glm::sin(glfwGetTime()) + 1) / 2, (glm::sin(glfwGetTime() + 10) + 1) / 2, (glm::sin(glfwGetTime() + 20) + 1) / 2, 1.0f));
 
-        texture1.use(GL_TEXTURE0);
-        lightShader.use();
-        lightShader.setInt("m_Texture", 0);
-        lightShader.setVec4("lightColor", light.getColor());
-        lightShader.setVec4("ambientColor", WHITE * 0.2f);
-        lightShader.setMat4("viewMatrix", camera.viewMatrix);
-        lightShader.setMat4("projectionMatrix", camera.projectionMatrix);
-        lightShader.setVec3("lightPos", light.transform.getPosition());
-        lightShader.setVec3("viewPos", camera.getPosition());
-        cat.draw(lightShader);
+        for (const glm::vec3& point : worleyPoints)
+        {
+            pointModel.setPosition(point);
+            texture1.use(GL_TEXTURE0);
+            lightShader.use();
+            lightShader.setInt("m_Texture", 0);
+            lightShader.setVec4("lightColor", glm::vec4(0));
+            if (point.x >= 0 && point.x <= 1 && point.y >= 0 && point.y <= 1 && point.z >= 0 && point.z <= 1)
+            {
+                lightShader.setVec4("ambientColor", WHITE);
+
+            }
+            else if (point.x < 0)
+            {
+                lightShader.setVec4("ambientColor", GREEN);
+            }
+            else
+            {
+                lightShader.setVec4("ambientColor", RED);
+            }
+            lightShader.setMat4("viewMatrix", camera.viewMatrix);
+            lightShader.setMat4("projectionMatrix", camera.projectionMatrix);
+            lightShader.setVec3("lightPos", light.transform.getPosition());
+            lightShader.setVec3("viewPos", camera.getPosition());
+            pointModel.draw(lightShader);
+        }
+
 
         // Write to frameBuffer's second pass
         frameBuffer.setPass(1);

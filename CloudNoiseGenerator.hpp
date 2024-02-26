@@ -59,7 +59,7 @@ public:
     std::vector<glm::vec3> RepeatWorleyPoints(const std::vector<glm::vec3>& points)
     {
         std::vector<glm::vec3> repeatedPoints;
-        std::size_t size = points.size() * points.size() * points.size();
+        std::size_t size = points.size() * 27;
         repeatedPoints.reserve(size);
 
         for (size_t x = 0; x < 3; x++)
@@ -72,15 +72,10 @@ public:
 
                     for (size_t i = 0; i < points.size(); i++)
                     {
-                        repeatedPoints.push_back((points[i] + offset));
+                        repeatedPoints.push_back((points[i] + offset) - glm::vec3(1));
                     }
                 }
             }
-        }
-
-        for (glm::vec3& point : repeatedPoints)
-        {
-            point -= 3.0f/2.0f;
         }
 
         return repeatedPoints;
@@ -106,9 +101,12 @@ public:
         glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         // Set texture wrapping parameters
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_MIRRORED_REPEAT);
+        //glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+        //glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+        //glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
         //glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         //glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         //glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);

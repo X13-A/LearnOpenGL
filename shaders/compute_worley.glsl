@@ -29,7 +29,7 @@ void main()
             minDist = newDist;
         }
     }
-    float worleyDiminutionFactor = 2.5;
+    float worleyDiminutionFactor = 5;
     float worleyIntensityFactor = 2;
     float worleyDist = (1 - minDist * worleyDiminutionFactor) * worleyIntensityFactor;
     

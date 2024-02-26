@@ -56,7 +56,7 @@ void main()
 	float dstTravelled = 0;
 	float stepSize = dstInsideBox / numSteps;
 
-	float densityFactor = 0.25;
+	float densityFactor = 1;
 	float totalDensity = 0;
 	int i = 0;
 	while (i < numSteps)
