@@ -22,6 +22,8 @@
 #include <assimp/cimport.h>
 #include <assimp/postprocess.h>
 #include "Utils.hpp"
+#include "FrameBuffer.hpp"
+#include "CloudNoiseGenerator.hpp"
 
 static const glm::vec4 WHITE = glm::vec4(1, 1, 1, 1);
 static const glm::vec4 RED = glm::vec4(1, 0, 0, 1);
@@ -97,127 +99,6 @@ void init()
     PerformanceTracker::getInstance().overrideTitle = true;
 }
 
-class FrameBuffer
-{
-    public:
-        GLuint FBO;
-        GLuint TCB; // Texture Color Buffer
-        GLuint TCB_secondPass; // Texture Color Buffer
-        GLuint RBO;
-        GLuint screenVAO;
-        GLuint screenVBO;
-
-        const float screenVertices[6 * 4] =
-        {
-            // positions   // texCoords
-            -1.0f,  1.0f,  0.0f, 1.0f,
-            -1.0f, -1.0f,  0.0f, 0.0f,
-             1.0f, -1.0f,  1.0f, 0.0f,
-
-            -1.0f,  1.0f,  0.0f, 1.0f,
-             1.0f, -1.0f,  1.0f, 0.0f,
-             1.0f,  1.0f,  1.0f, 1.0f
-        };
-
-        void setup()
-        {
-            unsigned int screenWidth = WindowManager::getInstance().getWidth();
-            unsigned int screenHeight = WindowManager::getInstance().getHeight();
-
-            // Create frame buffer object
-            glGenFramebuffers(1, &FBO);
-            glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-
-            // Create render texture
-            glGenTextures(1, &TCB);
-            glBindTexture(GL_TEXTURE_2D, TCB);
-
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, screenWidth, screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glBindTexture(GL_TEXTURE_2D, 0);
-
-            // Create second pass render texture
-            glGenTextures(1, &TCB_secondPass);
-            glBindTexture(GL_TEXTURE_2D, TCB_secondPass);
-
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, screenWidth, screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glBindTexture(GL_TEXTURE_2D, 0);
-
-            // Attach texture to framebuffer
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, TCB, 0);
-
-            // Renderbuffer for depth and stencil
-            glGenRenderbuffers(1, &RBO);
-            glBindRenderbuffer(GL_RENDERBUFFER, RBO);
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, screenWidth, screenHeight);
-            glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-            // Attach renderbuffer to framebuffer
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO);
-
-            // Check if FBO is complete
-            if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-            {
-                std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
-            }
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            
-            // Setup screen quad
-            glGenVertexArrays(1, &screenVAO);
-            glGenBuffers(1, &screenVBO);
-            glBindVertexArray(screenVAO);
-
-            glBindBuffer(GL_ARRAY_BUFFER, screenVBO);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(screenVertices), &screenVertices, GL_STATIC_DRAW);
-
-            // position attribute
-            glEnableVertexAttribArray(0);
-            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-
-            // texture coordinate attribute
-            glEnableVertexAttribArray(1);
-            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
-            glBindVertexArray(0);
-        }
-
-        void use()
-        {
-            glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-        }
-
-        void setPass(short pass)
-        {
-            if (pass == 0)
-            {
-                glBindTexture(GL_TEXTURE_2D, TCB);
-                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, TCB, 0);
-            }
-            else
-            {
-                // Before switching to second pass, copy the content of the first texture to the second
-                glBindTexture(GL_TEXTURE_2D, TCB_secondPass);
-                glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, WindowManager::getInstance().getWidth(), WindowManager::getInstance().getHeight(), 0);
-                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, TCB_secondPass, 0);
-            }
-        }
-
-        void draw(Shader& shader)
-        {
-            shader.use();
-            glActiveTexture(GL_TEXTURE0);
-            shader.setInt("mainTex", 0);
-
-            glBindVertexArray(screenVAO);
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-            glBindVertexArray(0);
-        }
-};
-
 int main()
 {
     init();
@@ -228,7 +109,7 @@ int main()
     Shader lightShader("shaders/lit.vert", "shaders/lit.frag");
     Shader cloudShader("shaders/cloud.vert", "shaders/cloud.frag");
     Shader screenShader("shaders/screen.vert", "shaders/screen.frag");
-    
+
     Texture texture1 = Texture("textures/fractal.jpg");
     Texture texture2 = Texture("textures/container.jpg");
     Texture sunTexture = Texture("textures/sun.jpg");
@@ -236,33 +117,50 @@ int main()
     Camera camera = Camera(45, WindowManager::getInstance().getWidth() / WindowManager::getInstance().getHeight(), 0.1f, 100.0f, glm::vec3(0, 0, 5));
     CreativeControls* cameraControls = new CreativeControls(camera, 3.0f, 0.1f);
     InputManager::init(cameraControls);
-
+    camera.translateGlobal(glm::vec3(0.5f, 0.5f, 0.5f));
     Model cat = Model("./models/Cat2.obj");
     cat.scale(glm::vec3(0.2f, 0.2f, 0.2f));
     cat.translate(glm::vec3(0, -0.5f, -3));
 
     Model cloud = Model("./models/Cube.obj");
-    
+    cloud.translate(glm::vec3(0.5f));
+    cloud.scale(glm::vec3(10, 3, 10));
     FrameBuffer frameBuffer;
     frameBuffer.setup();
 
+    CloudNoiseGenerator generator;
+    GLuint points_n = 5;
+    std::vector<glm::vec3> worleyPoints = generator.RepeatWorleyPoints(generator.CreateWorleyPoints(points_n));
+    GLuint worleyTexture = generator.ComputeWorleyTexture(worleyPoints, 256);
+    
     glEnable(GL_DEPTH_TEST);
-    cloud.setRotation(glm::vec3(-90, 0, 0));
     while (!glfwWindowShouldClose(WindowManager::getInstance().getWindow()))
     {
+        Color clearColor = Color(0.6, 0.6, 0.8, 1.0);
         Time::update();
         InputManager::getInstance().update();
-        WindowManager::getInstance().clear(Color(0, 0, 0, 1.0));  // Color(0.6, 0.6, 0.8, 1.0)
+        WindowManager::getInstance().clear(clearColor);  // Color(0.6, 0.6, 0.8, 1.0)
         cameraControls->update();
+
+        if (InputManager::getInstance().isKeyPressed(KeyboardKey::G))
+        {
+            worleyPoints = generator.RepeatWorleyPoints(generator.CreateWorleyPointsGrid(2));
+            worleyTexture = generator.ComputeWorleyTexture(worleyPoints, 256);
+        }
+        else if (InputManager::getInstance().isKeyPressed(KeyboardKey::F))
+        {
+            worleyPoints = generator.RepeatWorleyPoints(generator.CreateWorleyPoints(points_n));
+            worleyTexture = generator.ComputeWorleyTexture(worleyPoints, 256);
+        }
 
         frameBuffer.use();
         frameBuffer.setPass(0);
         setBackFaceCulling(true);
 
-        WindowManager::getInstance().clear(Color(0, 0, 0, 1.0));  // Color(0.6, 0.6, 0.8, 1.0)
-        
+        WindowManager::getInstance().clear(clearColor);  // Color(0.6, 0.6, 0.8, 1.0)
+
         float rotateRadius = 3;
-        light.transform.setPosition(glm::vec3(glm::sin(glfwGetTime())* rotateRadius, glm::cos(glfwGetTime())* rotateRadius, glm::sin(glfwGetTime())* rotateRadius));
+        light.transform.setPosition(glm::vec3(glm::sin(glfwGetTime()) * rotateRadius, glm::cos(glfwGetTime()) * rotateRadius, glm::sin(glfwGetTime()) * rotateRadius));
         light.setColor(glm::vec4((glm::sin(glfwGetTime()) + 1) / 2, (glm::sin(glfwGetTime() + 10) + 1) / 2, (glm::sin(glfwGetTime() + 20) + 1) / 2, 1.0f));
 
         texture1.use(GL_TEXTURE0);
@@ -286,16 +184,19 @@ int main()
         cloudShader.setVec3("boundsMin", (cloud.getPosition() - cloud.getScale()));
         cloudShader.setVec3("boundsMax", (cloud.getPosition() + cloud.getScale()));
         cloudShader.setVec3("cameraPos", camera.getPosition());
+        cloudShader.setInt("numSteps", 100);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, frameBuffer.TCB);
         cloudShader.setInt("mainTex", 0);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_3D, worleyTexture);
+        cloudShader.setInt("noiseTex", 1);
         cloud.draw(cloudShader);
 
-        //Use base render target (window)
-        frameBuffer.setPass(1);
-
         glDisable(GL_DEPTH_TEST);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0); // Use base render target (window)
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, frameBuffer.TCB_secondPass); // Draw second pass texture
         frameBuffer.draw(screenShader);
         glEnable(GL_DEPTH_TEST);
 

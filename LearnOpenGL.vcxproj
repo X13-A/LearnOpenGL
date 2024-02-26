@@ -148,6 +148,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Color.hpp" />
+    <ClCompile Include="FrameBuffer.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Light.cpp" />
@@ -162,6 +163,7 @@
   <ItemGroup>
     <None Include="shaders\cloud.frag" />
     <None Include="shaders\cloud.vert" />
+    <None Include="shaders\compute_worley.glsl" />
     <None Include="shaders\sampleTex.frag" />
     <None Include="shaders\sampleTex.vert" />
     <None Include="shaders\screen.frag" />
@@ -174,8 +176,11 @@
   <ItemGroup>
     <ClInclude Include="Camera.hpp" />
     <ClInclude Include="CameraControls.hpp" />
+    <ClInclude Include="CloudNoiseGenerator.hpp" />
     <ClInclude Include="Commons.hpp" />
+    <ClInclude Include="ComputeShader.hpp" />
     <ClInclude Include="CreativeControls.hpp" />
+    <ClInclude Include="FrameBuffer.hpp" />
     <ClInclude Include="InputManager.hpp" />
     <ClInclude Include="Light.hpp" />
     <ClInclude Include="Model.hpp" />
