@@ -36,14 +36,11 @@ vec2 rayBoxDst(vec3 boundsMin, vec3 boundsMax, vec3 rayOrigin, vec3 rayDir)
 
 void main()
 {
-
-	//FragColor = texture(noiseTex, fragPos);
-	//return;
-
+	// WARNING: fragPos oscillates constantly when viewing angle changes.
+	// TODO: Sampling the edges of the texture will cause flickering and a little bit of noise on the clouds. this should be fixed.
+	
     vec3 ndcPos = fragClipPos.xyz / fragClipPos.w;
 	vec2 fragScreenPos = ndcPos.xy * 0.5 + 0.5;
-	
-	vec4 volumeColor = texture(noiseTex, vec3(0.5, 0.5, 0.5));
 
 	vec4 col = vec4(0, 0, 0, 0);
 	vec3 rayOrigin = cameraPos;
@@ -66,7 +63,15 @@ void main()
 		totalDensity += sampled_density * stepSize * densityFactor;
 		dstTravelled += stepSize;
 		i++;
+		if (sampled_density > 1)
+		{
+			//FragColor = vec4(0.2, 0.2, 0.6, 1);
+			//return;
+		}
 	}
+
+	//FragColor = texture(mainTex, fragScreenPos);
+	//return;
 
 	if (dstInsideBox > 0)
 	{

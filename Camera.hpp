@@ -66,6 +66,11 @@ class Camera
 			this->fov = fov;
 		}
 
+		void setRatio(float ratio)
+		{
+			this->ratio = ratio;
+		}
+
 		/// <summary>
 		/// Computes the right and up axes depending on the forward axis
 		/// </summary>

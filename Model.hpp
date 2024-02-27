@@ -13,7 +13,10 @@
 class Model
 {
     public:
+        Model();
         Model(const std::string& path);
+        void loadModel(const std::string& path);
+
         void draw(Shader& shader);
         const glm::vec3& getPosition() const;
         const glm::vec3& getRotation() const;
@@ -34,7 +37,6 @@ class Model
         glm::vec3 _rotation;
         glm::vec3 _scale;
 
-        void loadModel(const std::string& path);
         void processNode(aiNode* node, const aiScene* scene);
         std::shared_ptr<Mesh> processMesh(aiMesh* mesh, const aiScene* scene);
         std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);

@@ -147,6 +147,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CloudNoiseGenerator.cpp" />
     <ClCompile Include="Color.hpp" />
     <ClCompile Include="FrameBuffer.cpp" />
     <ClCompile Include="glad.c" />
@@ -177,6 +178,7 @@
     <ClInclude Include="Camera.hpp" />
     <ClInclude Include="CameraControls.hpp" />
     <ClInclude Include="CloudNoiseGenerator.hpp" />
+    <ClInclude Include="CloudsScene.hpp" />
     <ClInclude Include="Commons.hpp" />
     <ClInclude Include="ComputeShader.hpp" />
     <ClInclude Include="CreativeControls.hpp" />
@@ -186,6 +188,7 @@
     <ClInclude Include="Model.hpp" />
     <ClInclude Include="OrbitControls.hpp" />
     <ClInclude Include="PerformanceTracker.hpp" />
+    <ClInclude Include="Scene.hpp" />
     <ClInclude Include="Singleton.hpp" />
     <ClInclude Include="stb_image.cpp" />
     <ClInclude Include="stb_image.h" />

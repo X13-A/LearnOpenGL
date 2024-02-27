@@ -7,7 +7,6 @@ uniform mat4 projectionMatrix;
 
 out vec4 fragClipPos;
 out vec3 fragPos;
-out vec3 fragUV;
 
 void main()
 {

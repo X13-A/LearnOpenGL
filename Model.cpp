@@ -3,6 +3,13 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+Model::Model()
+{
+    _scale = glm::vec3(1, 1, 1);
+    _position = glm::vec3(0, 0, 0);
+    _rotation = glm::vec3(0, 0, 0);
+}
+
 Model::Model(const std::string& path)
 {
     loadModel(path);
