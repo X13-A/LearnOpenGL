@@ -73,14 +73,22 @@ std::vector<glm::vec3> CloudNoiseGenerator::RepeatWorleyPoints(const std::vector
 
 GLuint CloudNoiseGenerator::ComputeWorleyTexture(std::vector <glm::vec3> worleyPoints, GLuint textureSize)
 {
+    std::vector<glm::vec4> worleyPointsVec4;
+    worleyPointsVec4.reserve(worleyPoints.size());
+    for (glm::vec3 point : worleyPoints)
+    {
+        worleyPointsVec4.push_back(glm::vec4(point, 1));
+    }
+
     ComputeShader computeShader = ComputeShader(WORLEY_COMPUTE_SHADER_PATH);
 
     // Create shader storage buffer
     GLuint ssbo;
     glGenBuffers(1, &ssbo);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, worleyPoints.size() * sizeof(glm::vec3), worleyPoints.data(), GL_STATIC_DRAW);
 
+    glBufferData(GL_SHADER_STORAGE_BUFFER, worleyPointsVec4.size() * sizeof(glm::vec4), worleyPointsVec4.data(), GL_STATIC_DRAW);
+    
     // Create texture
     glGenTextures(1, &worleyTexture);
     glBindTexture(GL_TEXTURE_3D, worleyTexture);
@@ -105,7 +113,7 @@ GLuint CloudNoiseGenerator::ComputeWorleyTexture(std::vector <glm::vec3> worleyP
     glUniform3i(textureDimensionsLocation, textureSize, textureSize, textureSize);
 
     GLint pointsBufferLengthLocation = glGetUniformLocation(program, "pointsBufferLength");
-    glUniform1i(pointsBufferLengthLocation, worleyPoints.size());
+    glUniform1i(pointsBufferLengthLocation, worleyPointsVec4.size());
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
     glBindImageTexture(1, worleyTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA8);

@@ -39,6 +39,9 @@ void main()
 	// WARNING: fragPos oscillates constantly when viewing angle changes.
 	// TODO: Sampling the edges of the texture will cause flickering and a little bit of noise on the clouds. this should be fixed.
 	
+	//FragColor = texture(noiseTex, fragPos);
+	//return;
+
     vec3 ndcPos = fragClipPos.xyz / fragClipPos.w;
 	vec2 fragScreenPos = ndcPos.xy * 0.5 + 0.5;
 
@@ -53,30 +56,23 @@ void main()
 	float dstTravelled = 0;
 	float stepSize = dstInsideBox / numSteps;
 
-	float densityFactor = 1;
 	float totalDensity = 0;
 	int i = 0;
 	while (i < numSteps)
 	{
 		vec3 rayPos = rayOrigin + rayDir * (dstToBox + dstTravelled);
-		float sampled_density = length(texture(noiseTex, rayPos).rgb);
-		totalDensity += sampled_density * stepSize * densityFactor;
+		float sampled_density = length(texture(noiseTex, rayPos/10).rgb);
+		totalDensity += sampled_density * stepSize;
 		dstTravelled += stepSize;
 		i++;
-		if (sampled_density > 1)
-		{
-			//FragColor = vec4(0.2, 0.2, 0.6, 1);
-			//return;
-		}
 	}
 
-	//FragColor = texture(mainTex, fragScreenPos);
-	//return;
-
+	float densityFactor = 0.01;
 	if (dstInsideBox > 0)
 	{
+		vec4 cloudColor = vec4(1, 1, 1, 0) * min(0.75, totalDensity * densityFactor);
 		vec4 res = texture(mainTex, fragScreenPos);
-		res += vec4(1, 1, 1, 0) * totalDensity / 5;
+		res += cloudColor;
 		FragColor = res;
 	}
 	else
