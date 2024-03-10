@@ -75,13 +75,23 @@ private:
 
     // Inputs
 	CreativeControls* cameraControls;
+    float cameraSpeed = 30;
 
     // Worley noise
     CloudNoiseGenerator generator;
-    GLuint points_n = 3;
-    GLuint worleyRes = 128;
+    GLuint points_n = 500;
+    GLuint worleyRes = 256;
     GLuint worleyTexture;
     std::vector<glm::vec3> worleyPoints;
+
+    // Clouds params
+    float cloudBrightness = 1;
+    float cloudDensity = 0.25;
+    float sunlightAbsorption = 15;
+    float cloudScale = 50;
+    int cloudSamples = 50;
+    int cloudLightSamples = 10;
+    glm::vec3 lightDir = glm::vec3(-90, 0, 0);
 
 public:
 	CloudsScene()
@@ -95,7 +105,7 @@ public:
 		frameBuffer.setup();
 
         // Shaders
-        cloudShader = new Shader("shaders/cloud.vert", "shaders/cloud.frag");
+        cloudShader = new Shader("shaders/cloud_vert.glsl", "shaders/cloud_frag.glsl");
         screenShader = new Shader("shaders/screen.vert", "shaders/screen.frag");
         lightShader = new Shader("shaders/lit.vert", "shaders/lit.frag");
         // Camera
@@ -103,7 +113,7 @@ public:
 		camera.translateGlobal(glm::vec3(0.0f, 0.0f, 3.0f));
 
         // Inputs
-		cameraControls = new CreativeControls(camera, 3.0f, 0.1f);
+		cameraControls = new CreativeControls(camera, cameraSpeed, 0.1f);
 		InputManager::init(cameraControls);
 
         // Worley
@@ -114,11 +124,11 @@ public:
         // Clouds
 		cloud.loadModel("./models/Cube.obj");
 		cloud.translate(glm::vec3(0.5000f, 0.5000f, 0.5000));
-        cloud.scale(glm::vec3(1000.1, 4, 1000.1));
+        cloud.scale(glm::vec3(100.000001, 6.000001, 100.000001));
 
         // Debug Models
         pointModel = Model("./models/Sphere.obj");
-        pointModel.scale(glm::vec3(0.05, 0.05, 0.05));
+        pointModel.scale(glm::vec3(5, 5, 5));
 	}
 
 	void update() override
@@ -176,12 +186,28 @@ public:
         }
     }
 
+    void drawPoint(glm::vec3 pos)
+    {
+        pointModel.setPosition(pos);
+
+        lightShader->use();
+        lightShader->setVec4("lightColor", glm::vec4(0));
+        lightShader->setMat4("viewMatrix", camera.viewMatrix);
+        lightShader->setMat4("projectionMatrix", camera.projectionMatrix);
+        lightShader->setVec3("lightPos", glm::vec3());
+        lightShader->setVec3("viewPos", camera.getPosition());
+        lightShader->setVec4("ambientColor", RED);
+        pointModel.draw(*lightShader);
+    }
+
 	void draw() override
 	{
         frameBuffer.use();
         frameBuffer.setPass(0);
 
         WindowManager::getInstance().clear(clearColor);
+        glm::vec3 lightPos = glm::vec3(0, 50, 0);
+        drawPoint(lightPos);
 
         // Write to frameBuffer's second pass
         frameBuffer.setPass(1);
@@ -193,7 +219,15 @@ public:
         cloudShader->setVec3("boundsMin", (cloud.getPosition() - cloud.getScale()));
         cloudShader->setVec3("boundsMax", (cloud.getPosition() + cloud.getScale()));
         cloudShader->setVec3("cameraPos", camera.getPosition());
-        cloudShader->setInt("numSteps", 50);
+        cloudShader->setVec3("cameraDir", camera.getForward());
+        cloudShader->setVec3("lightDir", -lightPos);
+        cloudShader->setVec3("lightPos", lightPos);
+        cloudShader->setInt("numSteps", cloudSamples);
+        cloudShader->setFloat("sunlightAbsorption", sunlightAbsorption);
+        cloudShader->setInt("numLightSteps", cloudLightSamples);
+        cloudShader->setFloat("global_density", cloudDensity);
+        cloudShader->setFloat("global_brightness", cloudBrightness);
+        cloudShader->setFloat("global_scale", cloudScale);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, frameBuffer.TCB);
@@ -203,13 +237,7 @@ public:
         glBindTexture(GL_TEXTURE_3D, worleyTexture);
         cloudShader->setInt("noiseTex", 1);
         cloud.draw(*cloudShader);
-
-        glDisable(GL_DEPTH_TEST);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0); // Use base render target (window)
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, frameBuffer.TCB_secondPass); // Draw second pass texture
-        frameBuffer.draw(*screenShader);
-        glEnable(GL_DEPTH_TEST);
+        frameBuffer.drawToWindow(*screenShader);
 	}
 };
 

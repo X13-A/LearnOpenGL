@@ -162,8 +162,8 @@
     <ClCompile Include="WindowManager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\cloud.frag" />
-    <None Include="shaders\cloud.vert" />
+    <None Include="shaders\cloud_vert.glsl" />
+    <None Include="shaders\cloud_frag.glsl" />
     <None Include="shaders\compute_worley.glsl" />
     <None Include="shaders\sampleTex.frag" />
     <None Include="shaders\sampleTex.vert" />

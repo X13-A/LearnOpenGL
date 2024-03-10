@@ -87,13 +87,17 @@ void FrameBuffer::setPass(short pass)
     }
 }
 
-void FrameBuffer::draw(Shader& shader)
+void FrameBuffer::drawToWindow(Shader& shader)
 {
     shader.use();
+    glDisable(GL_DEPTH_TEST);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0); // Use base render target (window)
     glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, TCB_secondPass); // Draw second pass texture
     shader.setInt("mainTex", 0);
 
     glBindVertexArray(screenVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
+    glEnable(GL_DEPTH_TEST);
 }

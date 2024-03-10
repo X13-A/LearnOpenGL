@@ -28,6 +28,6 @@ public:
     void setup();
     void use();
     void setPass(short pass);
-    void draw(Shader& shader);
+    void drawToWindow(Shader& shader);
 };
 

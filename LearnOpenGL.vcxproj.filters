@@ -71,10 +71,7 @@
     <None Include="shaders\lit.vert">
       <Filter>Fichiers sources\Shaders</Filter>
     </None>
-    <None Include="shaders\cloud.frag">
-      <Filter>Fichiers sources\Shaders</Filter>
-    </None>
-    <None Include="shaders\cloud.vert">
+    <None Include="shaders\cloud_vert.glsl">
       <Filter>Fichiers sources\Shaders</Filter>
     </None>
     <None Include="shaders\screen.frag">
@@ -90,6 +87,9 @@
       <Filter>Fichiers sources\Shaders</Filter>
     </None>
     <None Include="shaders\compute_worley.glsl">
+      <Filter>Fichiers sources\Shaders</Filter>
+    </None>
+    <None Include="shaders\cloud_frag.glsl">
       <Filter>Fichiers sources\Shaders</Filter>
     </None>
   </ItemGroup>
