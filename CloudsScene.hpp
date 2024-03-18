@@ -79,10 +79,13 @@ private:
 
     // Worley noise
     CloudNoiseGenerator generator;
-    GLuint points_n = 500;
+    GLuint points_n_1 = 500;
+    GLuint points_n_2 = 1000;
+    GLuint points_n_3 = 200;
     GLuint worleyRes = 128;
     GLuint worleyTexture1;
     GLuint worleyTexture2;
+    GLuint worleyTexture3;
     std::vector<glm::vec3> worleyPoints;
 
     // Clouds params
@@ -91,6 +94,12 @@ private:
     float sunlightAbsorption = 15;
     float cloudScale1 = 80;
     float cloudScale2 = 40;
+    float cloudScale3 = 300;
+
+    float cloudSpeed1 = 1;
+    float cloudSpeed2 = 2;
+    float cloudSpeed3 = 0.5;
+
     float global_noise = 2;
 
     float bottom_falloff = 0.5;
@@ -125,13 +134,18 @@ public:
 		InputManager::init(cameraControls);
 
         // Worley
-        worleyPoints = generator.CreateWorleyPoints(points_n);
+        worleyPoints = generator.CreateWorleyPoints(points_n_1);
         worleyPoints = generator.RepeatWorleyPoints(worleyPoints);
         worleyTexture1 = generator.ComputeWorleyTexture(worleyPoints, worleyRes);
         
-        worleyPoints = generator.CreateWorleyPoints(points_n);
+        worleyPoints = generator.CreateWorleyPoints(points_n_2);
         worleyPoints = generator.RepeatWorleyPoints(worleyPoints);
         worleyTexture2 = generator.ComputeWorleyTexture(worleyPoints, worleyRes);
+
+        // Meteo
+        worleyPoints = generator.CreateWorleyPoints(points_n_3);
+        worleyPoints = generator.RepeatWorleyPoints(worleyPoints);
+        worleyTexture3 = generator.ComputeWorleyTexture(worleyPoints, worleyRes);
 
         // Clouds
 		cloud.loadModel("./models/Cube.obj");
@@ -151,13 +165,18 @@ public:
 
         if (InputManager::getInstance().isKeyPressed(KeyboardKey::G))
         {
-            worleyPoints = generator.RepeatWorleyPoints(generator.CreateWorleyPoints(points_n));
+            worleyPoints = generator.RepeatWorleyPoints(generator.CreateWorleyPoints(points_n_1));
             worleyTexture1 = generator.ComputeWorleyTexture(worleyPoints, worleyRes);
         }
         else if (InputManager::getInstance().isKeyPressed(KeyboardKey::F))
         {
-            worleyPoints = generator.RepeatWorleyPoints(generator.CreateWorleyPoints(points_n));
+            worleyPoints = generator.RepeatWorleyPoints(generator.CreateWorleyPoints(points_n_2));
             worleyTexture2 = generator.ComputeWorleyTexture(worleyPoints, worleyRes);
+        }
+        else if (InputManager::getInstance().isKeyPressed(KeyboardKey::H))
+        {
+            worleyPoints = generator.RepeatWorleyPoints(generator.CreateWorleyPoints(points_n_3));
+            worleyTexture3 = generator.ComputeWorleyTexture(worleyPoints, worleyRes);
         }
 	}
 
@@ -218,7 +237,7 @@ public:
         frameBuffer.setPass(0);
 
         WindowManager::getInstance().clear(clearColor);
-        glm::vec3 lightPos = glm::vec3(0, 50, 0);
+        glm::vec3 lightPos = glm::vec3(20, 50, 0);
         drawPoint(lightPos);
 
         // Write to frameBuffer's second pass
@@ -241,6 +260,13 @@ public:
         cloudShader->setFloat("global_brightness", cloudBrightness);
         cloudShader->setFloat("global_scale1", cloudScale1);
         cloudShader->setFloat("global_scale2", cloudScale2);
+        cloudShader->setFloat("global_scale3", cloudScale3);
+
+        cloudShader->setFloat("global_speed1", cloudSpeed1);
+        cloudShader->setFloat("global_speed2", cloudSpeed2);
+        cloudShader->setFloat("global_speed3", cloudSpeed3);
+
+        cloudShader->setFloat("time", glfwGetTime());
 
         cloudShader->setFloat("bottom_falloff", bottom_falloff);
         cloudShader->setFloat("top_falloff", top_falloff);
@@ -256,6 +282,11 @@ public:
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_3D, worleyTexture2);
         cloudShader->setInt("noiseTex2", 2);
+
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_3D, worleyTexture3);
+        cloudShader->setInt("noiseTex3", 3);
+
 
         cloud.draw(*cloudShader);
         frameBuffer.drawToWindow(*screenShader);

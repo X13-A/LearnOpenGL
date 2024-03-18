@@ -13,21 +13,52 @@ uniform int numSteps;
 uniform int numLightSteps;
 uniform float global_brightness;
 uniform float global_density;
+
 uniform sampler3D noiseTex1;
 uniform sampler3D noiseTex2;
+uniform sampler3D noiseTex3;
+
 uniform float global_scale1;
 uniform float global_scale2;
+uniform float global_scale3;
+
+uniform float global_speed1;
+uniform float global_speed2;
+uniform float global_speed3;
+
 uniform float sunlightAbsorption;
 
+uniform float time;
 uniform float bottom_falloff;
 uniform float top_falloff;
 
 float sampleDensity(vec3 pos)
 {
-	float density1 = length(texture(noiseTex1, pos / global_scale1).rgb);
-	float density2 = length(texture(noiseTex2, pos / global_scale2).rgb);
+	// Scroll on +X for now
+	float density1 = length(texture(noiseTex1, vec3(pos.x + time * global_speed1, pos.y, pos.z) / global_scale1).rgb);
+	float density2 = length(texture(noiseTex2, vec3(pos.x + time * global_speed2, pos.y, pos.z) / global_scale2).rgb);
+	float density3 = length(texture(noiseTex3, vec3(pos.x + time * global_speed3, pos.y, pos.z) / global_scale3).rgb);
 
-	return min(density1, density2);
+	float res = min(density1, density2) - density3;
+	return clamp(res, 0, 1);
+}
+
+// g = 0 causes uniform scattering while g = 1 causes directional scattering, in the direction of the photons
+float henyeyGreenstein(float angle, float g)
+{
+	float g2 = g * g;
+	return (1 - g2) / (4 * 3.1415 * pow(1 + g2 - 2 * g * (angle), 1.5));
+}
+
+float phase(vec3 rayDir, vec3 lightDir)
+{
+	float angle = acos(dot(rayDir, lightDir)); 
+	float g1 = 0.5;
+	float g2 = 0.5;
+	float blend = .5;
+	float hgBlend = henyeyGreenstein(angle, g1) * (1 - blend) + henyeyGreenstein(angle, -g2) * blend;
+	return 1;
+	return hgBlend;
 }
 
 vec2 rayBoxDst(vec3 rayOrigin, vec3 rayDir)
@@ -83,6 +114,7 @@ vec3 sampleCloud(vec3 rayOrigin, vec3 rayDir, float dstToBox, float dstInsideBox
 	float lightEnergy = 0;
 	float stepSize = 0.5; // TODO: Improve performance on far distances
 	float totalDensity = 0;
+	float phaseVal = phase(rayDir, normalize(-lightDir));
 
 	int i = 0;
 	while (dstTravelled < dstLimit)
@@ -98,7 +130,7 @@ vec3 sampleCloud(vec3 rayOrigin, vec3 rayDir, float dstToBox, float dstInsideBox
 		totalDensity += density;
 
 		float lightTransmittance = lightMarch(rayPos);
-		lightEnergy += density * transmittance * lightTransmittance;
+		lightEnergy += density * transmittance * lightTransmittance * phaseVal;
 		transmittance *= exp(-density);
 
 		dstTravelled += stepSize;
@@ -124,6 +156,7 @@ void main()
 	float lightEnergy = sampleData.y;
 	float totalDensity = sampleData.z;
 
+
 	if (dstInsideBox > 0)
 	{
 		// Sample base image
@@ -131,12 +164,8 @@ void main()
 		vec2 fragScreenPos = ndcPos.xy * 0.5 + 0.5;
 		vec4 backgroundColor = texture(mainTex, fragScreenPos);
 
-		// Phase
-		float cosAngle = dot(rayDir, -lightDir);
-		float phaseVal = 1;
-
 		vec4 cloudColor = vec4(1, 1, 1, 1);
-		cloudColor *= lightEnergy * global_brightness * phaseVal;
+		cloudColor *= lightEnergy * global_brightness;
 
 		FragColor = backgroundColor* transmittance + cloudColor;
 		return;
