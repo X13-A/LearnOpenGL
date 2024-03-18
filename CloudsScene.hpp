@@ -80,17 +80,24 @@ private:
     // Worley noise
     CloudNoiseGenerator generator;
     GLuint points_n = 500;
-    GLuint worleyRes = 256;
-    GLuint worleyTexture;
+    GLuint worleyRes = 128;
+    GLuint worleyTexture1;
+    GLuint worleyTexture2;
     std::vector<glm::vec3> worleyPoints;
 
     // Clouds params
     float cloudBrightness = 1;
     float cloudDensity = 0.25;
     float sunlightAbsorption = 15;
-    float cloudScale = 50;
-    int cloudSamples = 50;
-    int cloudLightSamples = 10;
+    float cloudScale1 = 80;
+    float cloudScale2 = 40;
+    float global_noise = 2;
+
+    float bottom_falloff = 0.5;
+    float top_falloff = 0.5;
+
+    int cloudSamples = 10;
+    int cloudLightSamples = 4;
     glm::vec3 lightDir = glm::vec3(-90, 0, 0);
 
 public:
@@ -110,7 +117,8 @@ public:
         lightShader = new Shader("shaders/lit.vert", "shaders/lit.frag");
         // Camera
 		camera = Camera(45, WindowManager::getInstance().getWidth() / WindowManager::getInstance().getHeight(), 0.1f, 100000.0f, glm::vec3(0, 0, 5));
-		camera.translateGlobal(glm::vec3(0.0f, 0.0f, 3.0f));
+		camera.translateGlobal(glm::vec3(-86.6055, -86.1902, 35.0335));
+        camera.setForward(glm::vec3(0.491636, 0.830984, -0.260306));
 
         // Inputs
 		cameraControls = new CreativeControls(camera, cameraSpeed, 0.1f);
@@ -119,12 +127,16 @@ public:
         // Worley
         worleyPoints = generator.CreateWorleyPoints(points_n);
         worleyPoints = generator.RepeatWorleyPoints(worleyPoints);
-        worleyTexture = generator.ComputeWorleyTexture(worleyPoints, worleyRes);
+        worleyTexture1 = generator.ComputeWorleyTexture(worleyPoints, worleyRes);
+        
+        worleyPoints = generator.CreateWorleyPoints(points_n);
+        worleyPoints = generator.RepeatWorleyPoints(worleyPoints);
+        worleyTexture2 = generator.ComputeWorleyTexture(worleyPoints, worleyRes);
 
         // Clouds
 		cloud.loadModel("./models/Cube.obj");
 		cloud.translate(glm::vec3(0.5000f, 0.5000f, 0.5000));
-        cloud.scale(glm::vec3(100.000001, 6.000001, 100.000001));
+        cloud.scale(glm::vec3(100.000001, 10.000001, 100.000001));
 
         // Debug Models
         pointModel = Model("./models/Sphere.obj");
@@ -139,13 +151,13 @@ public:
 
         if (InputManager::getInstance().isKeyPressed(KeyboardKey::G))
         {
-            worleyPoints = generator.RepeatWorleyPoints(generator.CreateWorleyPointsGrid(10));
-            worleyTexture = generator.ComputeWorleyTexture(worleyPoints, worleyRes);
+            worleyPoints = generator.RepeatWorleyPoints(generator.CreateWorleyPoints(points_n));
+            worleyTexture1 = generator.ComputeWorleyTexture(worleyPoints, worleyRes);
         }
         else if (InputManager::getInstance().isKeyPressed(KeyboardKey::F))
         {
             worleyPoints = generator.RepeatWorleyPoints(generator.CreateWorleyPoints(points_n));
-            worleyTexture = generator.ComputeWorleyTexture(worleyPoints, worleyRes);
+            worleyTexture2 = generator.ComputeWorleyTexture(worleyPoints, worleyRes);
         }
 	}
 
@@ -196,7 +208,7 @@ public:
         lightShader->setMat4("projectionMatrix", camera.projectionMatrix);
         lightShader->setVec3("lightPos", glm::vec3());
         lightShader->setVec3("viewPos", camera.getPosition());
-        lightShader->setVec4("ambientColor", RED);
+        lightShader->setVec4("ambientColor", WHITE);
         pointModel.draw(*lightShader);
     }
 
@@ -227,15 +239,24 @@ public:
         cloudShader->setInt("numLightSteps", cloudLightSamples);
         cloudShader->setFloat("global_density", cloudDensity);
         cloudShader->setFloat("global_brightness", cloudBrightness);
-        cloudShader->setFloat("global_scale", cloudScale);
+        cloudShader->setFloat("global_scale1", cloudScale1);
+        cloudShader->setFloat("global_scale2", cloudScale2);
+
+        cloudShader->setFloat("bottom_falloff", bottom_falloff);
+        cloudShader->setFloat("top_falloff", top_falloff);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, frameBuffer.TCB);
         cloudShader->setInt("mainTex", 0);
 
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_3D, worleyTexture);
-        cloudShader->setInt("noiseTex", 1);
+        glBindTexture(GL_TEXTURE_3D, worleyTexture1);
+        cloudShader->setInt("noiseTex1", 1);
+        
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_3D, worleyTexture2);
+        cloudShader->setInt("noiseTex2", 2);
+
         cloud.draw(*cloudShader);
         frameBuffer.drawToWindow(*screenShader);
 	}

@@ -9,13 +9,26 @@ uniform vec3 cameraPos;
 uniform vec3 cameraDir;
 uniform vec3 lightDir;
 uniform sampler2D mainTex;
-uniform sampler3D noiseTex;
 uniform int numSteps;
 uniform int numLightSteps;
 uniform float global_brightness;
 uniform float global_density;
-uniform float global_scale;
+uniform sampler3D noiseTex1;
+uniform sampler3D noiseTex2;
+uniform float global_scale1;
+uniform float global_scale2;
 uniform float sunlightAbsorption;
+
+uniform float bottom_falloff;
+uniform float top_falloff;
+
+float sampleDensity(vec3 pos)
+{
+	float density1 = length(texture(noiseTex1, pos / global_scale1).rgb);
+	float density2 = length(texture(noiseTex2, pos / global_scale2).rgb);
+
+	return min(density1, density2);
+}
 
 vec2 rayBoxDst(vec3 rayOrigin, vec3 rayDir)
 {
@@ -50,7 +63,7 @@ float lightMarch(vec3 samplePos)
 	while (i < numLightSteps)
 	{
 		vec3 rayPos = samplePos + (rayDir * dstTravelled);
-		float sampledDensity = stepSize * length(texture(noiseTex, rayPos / global_scale).rgb) * global_density;
+		float sampledDensity = stepSize * sampleDensity(rayPos) * global_density;
 		totalDensity += sampledDensity;
 		dstTravelled += stepSize;
 		i++;
@@ -60,31 +73,39 @@ float lightMarch(vec3 samplePos)
 	return transmittance;
 }
 
-vec2 sampleCloud(vec3 rayOrigin, vec3 rayDir, float dstToBox, float dstInsideBox)
+vec3 sampleCloud(vec3 rayOrigin, vec3 rayDir, float dstToBox, float dstInsideBox)
 {
-	float dstLimit = dstInsideBox;
 	float dstTravelled = 0;
-
-	float stepSize = 1; //TODO: replace with fixed value (and max range)
+	float dstLimit = min(100, dstInsideBox); // TODO: Improve far distances
+	float baseStepSize = 1;
 
 	float transmittance = 1;
 	float lightEnergy = 0;
+	float stepSize = 0.5; // TODO: Improve performance on far distances
+	float totalDensity = 0;
 
 	int i = 0;
 	while (dstTravelled < dstLimit)
 	{
+		if (transmittance < 0.02)
+		{
+			break;
+		}
+		//float stepSize = min(baseStepSize, dstInsideBox - dstTravelled);
+
 		vec3 rayPos = rayOrigin + rayDir * (dstToBox + dstTravelled);
-		float density = length(texture(noiseTex, rayPos / global_scale).rgb) * stepSize * global_density;
+		float density = sampleDensity(rayPos) * stepSize * global_density;
+		totalDensity += density;
 
 		float lightTransmittance = lightMarch(rayPos);
-		lightEnergy += density * transmittance * lightTransmittance; // TODO: Understand this line
+		lightEnergy += density * transmittance * lightTransmittance;
 		transmittance *= exp(-density);
 
 		dstTravelled += stepSize;
 		i++;
 	}
 
-	return vec2(transmittance, lightEnergy);
+	return vec3(transmittance, lightEnergy, totalDensity);
 }
 
 void main()
@@ -98,9 +119,10 @@ void main()
 	float dstInsideBox = rayBoxInfo.y;
 
 	// Sample cloud density
-	vec2 sampleData = sampleCloud(rayOrigin, rayDir, dstToBox, dstInsideBox);
+	vec3 sampleData = sampleCloud(rayOrigin, rayDir, dstToBox, dstInsideBox);
 	float transmittance = sampleData.x;
 	float lightEnergy = sampleData.y;
+	float totalDensity = sampleData.z;
 
 	if (dstInsideBox > 0)
 	{
@@ -109,10 +131,14 @@ void main()
 		vec2 fragScreenPos = ndcPos.xy * 0.5 + 0.5;
 		vec4 backgroundColor = texture(mainTex, fragScreenPos);
 
-		vec4 cloudColor = vec4(1, 1, 1, 1);
-		cloudColor *= lightEnergy * global_brightness;
+		// Phase
+		float cosAngle = dot(rayDir, -lightDir);
+		float phaseVal = 1;
 
-		FragColor = backgroundColor * transmittance + cloudColor;
+		vec4 cloudColor = vec4(1, 1, 1, 1);
+		cloudColor *= lightEnergy * global_brightness * phaseVal;
+
+		FragColor = backgroundColor* transmittance + cloudColor;
 		return;
 	}
 	FragColor = vec4(1, 0, 0, 1);
