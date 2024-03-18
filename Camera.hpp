@@ -3,6 +3,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <iostream>
 
 class Camera
 {
@@ -125,6 +126,24 @@ class Camera
 			position += right * offset.x;
 			position += up * offset.y;
 			position += forward * offset.z;
+		}
+
+		float getYaw() const
+		{
+			float yaw = atan2(forward.z, forward.x);
+			return yaw;
+		}
+
+		float getPitch() const
+		{
+			float pitch = asin(forward.y);
+			return pitch;
+		}
+
+		void printValues()
+		{
+			std::cout << "Pos: " << getPosition().x << ", " << getPosition().y << ", " << getPosition().z << std::endl;
+			std::cout << "Rot: " << getForward().x << ", " << getForward().y << ", " << getForward().z << std::endl;
 		}
 };
 

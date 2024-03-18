@@ -16,8 +16,8 @@ class CreativeControls : public CameraControls
     public:
         CreativeControls(Camera& camera, float moveSpeed, float rotateSpeed) : CameraControls(camera), moveSpeed(moveSpeed), rotateSpeed(rotateSpeed)
         {
-            yaw = -90;
-            pitch = 0;
+            yaw = camera.getYaw();
+            pitch = camera.getPitch();
         }
 
         void handleMouseMove(float xoffset, float yoffset) override
