@@ -186,6 +186,7 @@
     <ClInclude Include="InputManager.hpp" />
     <ClInclude Include="Light.hpp" />
     <ClInclude Include="Model.hpp" />
+    <ClInclude Include="ModelsScene.hpp" />
     <ClInclude Include="OrbitControls.hpp" />
     <ClInclude Include="PerformanceTracker.hpp" />
     <ClInclude Include="Scene.hpp" />
