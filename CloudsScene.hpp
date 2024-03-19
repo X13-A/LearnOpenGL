@@ -66,7 +66,7 @@ private:
     // Rendering
 	Camera camera;
 	FrameBuffer frameBuffer;
-    Color clearColor = Color(0.6, 0.6, 0.8, 1.0);
+    Color clearColor = Color(162.0/255.0, 213.0/255.0, 230.0/255.0, 1.0);
 
     // Shaders
     Shader* cloudShader;
@@ -99,8 +99,7 @@ private:
     float cloudSpeed1 = 1;
     float cloudSpeed2 = 2;
     float cloudSpeed3 = 0.5;
-
-    float global_noise = 2;
+    glm::vec2 phaseParams = glm::vec2(0.65, 0.65);
 
     float bottom_falloff = 0.5;
     float top_falloff = 0.5;
@@ -177,6 +176,18 @@ public:
         {
             worleyPoints = generator.RepeatWorleyPoints(generator.CreateWorleyPoints(points_n_3));
             worleyTexture3 = generator.ComputeWorleyTexture(worleyPoints, worleyRes);
+        }
+        if (InputManager::getInstance().isKeyPressed(KeyboardKey::O))
+        {
+            phaseParams += glm::vec2(0.5) * glm::vec2(Time::deltaTime());
+            phaseParams = glm::clamp(phaseParams, glm::vec2(0), glm::vec2(1));
+            std::cout << "Phase: " << phaseParams.r << ", " << phaseParams.g << std::endl;
+        }
+        if (InputManager::getInstance().isKeyPressed(KeyboardKey::P))
+        {
+            phaseParams -= glm::vec2(0.5) * glm::vec2(Time::deltaTime());
+            phaseParams = glm::clamp(phaseParams, glm::vec2(0), glm::vec2(1));
+            std::cout << "Phase: " << phaseParams.r << ", " << phaseParams.g << std::endl;
         }
 	}
 
@@ -267,6 +278,7 @@ public:
         cloudShader->setFloat("global_speed3", cloudSpeed3);
 
         cloudShader->setFloat("time", glfwGetTime());
+        cloudShader->setVec2("phaseParams", phaseParams);
 
         cloudShader->setFloat("bottom_falloff", bottom_falloff);
         cloudShader->setFloat("top_falloff", top_falloff);

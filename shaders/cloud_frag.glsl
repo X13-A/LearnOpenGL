@@ -8,6 +8,7 @@ uniform vec3 boundsMax;
 uniform vec3 cameraPos;
 uniform vec3 cameraDir;
 uniform vec3 lightDir;
+uniform vec3 lightPos;
 uniform sampler2D mainTex;
 uniform int numSteps;
 uniform int numLightSteps;
@@ -25,6 +26,8 @@ uniform float global_scale3;
 uniform float global_speed1;
 uniform float global_speed2;
 uniform float global_speed3;
+
+uniform vec2 phaseParams;
 
 uniform float sunlightAbsorption;
 
@@ -52,13 +55,10 @@ float henyeyGreenstein(float angle, float g)
 
 float phase(vec3 rayDir, vec3 lightDir)
 {
-	float angle = acos(dot(rayDir, lightDir)); 
-	float g1 = 0.5;
-	float g2 = 0.5;
-	float blend = .5;
-	float hgBlend = henyeyGreenstein(angle, g1) * (1 - blend) + henyeyGreenstein(angle, -g2) * blend;
-	return 1;
-	return hgBlend;
+	float dot = dot(rayDir, lightDir);
+	float hgTop = henyeyGreenstein(-dot, phaseParams.x);
+	float hgBottom = henyeyGreenstein(dot, phaseParams.y);
+	return 1 + hgBottom + hgTop;
 }
 
 vec2 rayBoxDst(vec3 rayOrigin, vec3 rayDir)
@@ -104,7 +104,7 @@ float lightMarch(vec3 samplePos)
 	return transmittance;
 }
 
-vec3 sampleCloud(vec3 rayOrigin, vec3 rayDir, float dstToBox, float dstInsideBox)
+vec3 sampleCloud(vec3 rayOrigin, vec3 rayDir, vec3 lightDir, float dstToBox, float dstInsideBox)
 {
 	float dstTravelled = 0;
 	float dstLimit = min(100, dstInsideBox); // TODO: Improve far distances
@@ -144,6 +144,7 @@ void main()
 {
 	vec3 rayOrigin = cameraPos;
 	vec3 rayDir = normalize(fragPos - rayOrigin);
+	vec3 localLightDir = normalize(fragPos - lightPos);
 
 	// Calculate dist inside box	
 	vec2 rayBoxInfo = rayBoxDst(rayOrigin, rayDir);
@@ -151,7 +152,7 @@ void main()
 	float dstInsideBox = rayBoxInfo.y;
 
 	// Sample cloud density
-	vec3 sampleData = sampleCloud(rayOrigin, rayDir, dstToBox, dstInsideBox);
+	vec3 sampleData = sampleCloud(rayOrigin, rayDir, localLightDir, dstToBox, dstInsideBox);
 	float transmittance = sampleData.x;
 	float lightEnergy = sampleData.y;
 	float totalDensity = sampleData.z;
