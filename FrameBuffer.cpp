@@ -10,8 +10,8 @@ void FrameBuffer::setup()
     glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
     // Create first pass render texture
-    glGenTextures(1, &TCB);
-    glBindTexture(GL_TEXTURE_2D, TCB);
+    glGenTextures(1, &SampleBuffer);
+    glBindTexture(GL_TEXTURE_2D, SampleBuffer);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, screenWidth, screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -19,8 +19,8 @@ void FrameBuffer::setup()
     glBindTexture(GL_TEXTURE_2D, 0);
 
     // Create second pass render texture
-    glGenTextures(1, &TCB_secondPass);
-    glBindTexture(GL_TEXTURE_2D, TCB_secondPass);
+    glGenTextures(1, &RenderBuffer);
+    glBindTexture(GL_TEXTURE_2D, RenderBuffer);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, screenWidth, screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -28,7 +28,7 @@ void FrameBuffer::setup()
     glBindTexture(GL_TEXTURE_2D, 0);
 
     // Attach texture to framebuffer
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, TCB, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, SampleBuffer, 0);
 
     // Renderbuffer for depth and stencil
     glGenRenderbuffers(1, &RBO);
@@ -69,22 +69,17 @@ void FrameBuffer::setup()
 void FrameBuffer::use()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, RenderBuffer, 0);
 }
 
-void FrameBuffer::setPass(short pass)
+/// <summary>
+/// Store render buffer in sample buffer
+/// </summary>
+void FrameBuffer::storeRenderBuffer()
 {
-    if (pass == 0)
-    {
-        glBindTexture(GL_TEXTURE_2D, TCB);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, TCB, 0);
-    }
-    else
-    {
-        // Before switching to second pass, copy the content of the first texture to the second
-        glBindTexture(GL_TEXTURE_2D, TCB_secondPass);
-        glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, WindowManager::getInstance().getWidth(), WindowManager::getInstance().getHeight(), 0);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, TCB_secondPass, 0);
-    }
+    glBindTexture(GL_TEXTURE_2D, SampleBuffer);
+    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, WindowManager::getInstance().getWidth(), WindowManager::getInstance().getHeight(), 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void FrameBuffer::drawToWindow(Shader& shader)
@@ -93,7 +88,7 @@ void FrameBuffer::drawToWindow(Shader& shader)
     glDisable(GL_DEPTH_TEST);
     glBindFramebuffer(GL_FRAMEBUFFER, 0); // Use base render target (window)
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, TCB_secondPass); // Draw second pass texture
+    glBindTexture(GL_TEXTURE_2D, RenderBuffer); // Draw second pass texture
     shader.setInt("mainTex", 0);
 
     glBindVertexArray(screenVAO);

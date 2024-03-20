@@ -6,13 +6,13 @@
 class FrameBuffer
 {
 public:
-    GLuint FBO;
-    GLuint TCB; // Texture Color Buffer
-    GLuint TCB_secondPass; // Texture Color Buffer
-    GLuint RBO;
+    GLuint FBO; // Frame Buffer Object
+    GLuint SampleBuffer; // Texture Color Buffer (TCB)
+    GLuint RenderBuffer; // Texture Color Buffer (TCB)
+    GLuint RBO; // Render Buffer Object
+
     GLuint screenVAO;
     GLuint screenVBO;
-
     const float screenVertices[6 * 4] =
     {
         // positions   // texCoords
@@ -27,7 +27,7 @@ public:
 
     void setup();
     void use();
-    void setPass(short pass);
+    void storeRenderBuffer();
     void drawToWindow(Shader& shader);
 };
 
