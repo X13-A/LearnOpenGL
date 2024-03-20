@@ -140,6 +140,16 @@ class Camera
 			return pitch;
 		}
 
+		float getNear() const
+		{
+			return near;
+		}
+
+		float getFar() const
+		{
+			return far;
+		}
+
 		void printValues()
 		{
 			std::cout << "Pos: " << getPosition().x << ", " << getPosition().y << ", " << getPosition().z << std::endl;

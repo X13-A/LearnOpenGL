@@ -156,14 +156,17 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesh.hpp" />
     <ClCompile Include="Model.cpp" />
+    <ClCompile Include="PostProcessLayer.cpp" />
     <ClCompile Include="Shader.hpp" />
     <ClCompile Include="Texture.hpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="WindowManager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\cloud_vert.glsl" />
-    <None Include="shaders\cloud_frag.glsl" />
+    <None Include="shaders\cloud_frag_fullscreen.glsl" />
+    <None Include="shaders\cloud_frag_3D.glsl" />
+    <None Include="shaders\cloud_vert_3D.glsl" />
+    <None Include="shaders\cloud_vert_fullscreen.glsl" />
     <None Include="shaders\compute_worley.glsl" />
     <None Include="shaders\sampleTex.frag" />
     <None Include="shaders\sampleTex.vert" />
@@ -189,6 +192,7 @@
     <ClInclude Include="ModelsScene.hpp" />
     <ClInclude Include="OrbitControls.hpp" />
     <ClInclude Include="PerformanceTracker.hpp" />
+    <ClInclude Include="PostProcessLayer.hpp" />
     <ClInclude Include="Scene.hpp" />
     <ClInclude Include="Singleton.hpp" />
     <ClInclude Include="stb_image.cpp" />

@@ -58,7 +58,7 @@ void setBackFaceCulling(bool value)
 void init()
 {
     stbi_set_flip_vertically_on_load(true);
-    WindowManager::init(900, 900, "CustomEngine");
+    WindowManager::init(800, 600, "CustomEngine");
     PerformanceTracker performanceTracker;
     PerformanceTracker::getInstance().verbose = false;
     PerformanceTracker::getInstance().overrideTitle = true;

@@ -16,6 +16,15 @@
     <Filter Include="Fichiers sources\Shaders">
       <UniqueIdentifier>{90225dfa-7c05-4aa2-9398-9cea6023568f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Fichiers d%27en-tête\PostProcessing">
+      <UniqueIdentifier>{0ae4ac85-adbb-4c9d-adcb-0d5f92062f6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\PostProcessing\Clouds">
+      <UniqueIdentifier>{0efffaff-3587-43bc-b892-b5b012c82ee0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\Inputs">
+      <UniqueIdentifier>{3c58ffcf-34f4-447c-8ddd-8ebec879c7e9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -36,9 +45,6 @@
     <ClCompile Include="Mesh.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClCompile>
-    <ClCompile Include="InputManager.cpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClCompile>
     <ClCompile Include="WindowManager.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
@@ -57,6 +63,12 @@
     <ClCompile Include="CloudNoiseGenerator.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="InputManager.cpp">
+      <Filter>Fichiers d%27en-tête\Inputs</Filter>
+    </ClCompile>
+    <ClCompile Include="PostProcessLayer.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\sun.frag">
@@ -69,9 +81,6 @@
       <Filter>Fichiers sources\Shaders</Filter>
     </None>
     <None Include="shaders\lit.vert">
-      <Filter>Fichiers sources\Shaders</Filter>
-    </None>
-    <None Include="shaders\cloud_vert.glsl">
       <Filter>Fichiers sources\Shaders</Filter>
     </None>
     <None Include="shaders\screen.frag">
@@ -89,7 +98,16 @@
     <None Include="shaders\compute_worley.glsl">
       <Filter>Fichiers sources\Shaders</Filter>
     </None>
-    <None Include="shaders\cloud_frag.glsl">
+    <None Include="shaders\cloud_frag_3D.glsl">
+      <Filter>Fichiers sources\Shaders</Filter>
+    </None>
+    <None Include="shaders\cloud_frag_fullscreen.glsl">
+      <Filter>Fichiers sources\Shaders</Filter>
+    </None>
+    <None Include="shaders\cloud_vert_3D.glsl">
+      <Filter>Fichiers sources\Shaders</Filter>
+    </None>
+    <None Include="shaders\cloud_vert_fullscreen.glsl">
       <Filter>Fichiers sources\Shaders</Filter>
     </None>
   </ItemGroup>
@@ -112,19 +130,7 @@
     <ClInclude Include="Camera.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="InputManager.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="Time.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="OrbitControls.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="CameraControls.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="CreativeControls.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="Singleton.hpp">
@@ -145,22 +151,37 @@
     <ClInclude Include="Light.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="CloudNoiseGenerator.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="ComputeShader.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="FrameBuffer.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="Scene.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="CloudsScene.hpp">
+    <ClInclude Include="ModelsScene.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="ModelsScene.hpp">
+    <ClInclude Include="CloudNoiseGenerator.hpp">
+      <Filter>Fichiers d%27en-tête\PostProcessing\Clouds</Filter>
+    </ClInclude>
+    <ClInclude Include="CloudsScene.hpp">
+      <Filter>Fichiers d%27en-tête\PostProcessing\Clouds</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameBuffer.hpp">
+      <Filter>Fichiers d%27en-tête\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="InputManager.hpp">
+      <Filter>Fichiers d%27en-tête\Inputs</Filter>
+    </ClInclude>
+    <ClInclude Include="CreativeControls.hpp">
+      <Filter>Fichiers d%27en-tête\Inputs</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraControls.hpp">
+      <Filter>Fichiers d%27en-tête\Inputs</Filter>
+    </ClInclude>
+    <ClInclude Include="OrbitControls.hpp">
+      <Filter>Fichiers d%27en-tête\Inputs</Filter>
+    </ClInclude>
+    <ClInclude Include="PostProcessLayer.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>
