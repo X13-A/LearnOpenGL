@@ -12,37 +12,64 @@
 
 class Shader
 {
+private:
+    const char* _vertexPath;
+    const char* _fragmentPath;
+    GLuint _vertexID;
+    GLuint _fragmentID;
+
 public:
-    unsigned int ID;
+    GLuint ID;
 
-    Shader(const char* vertexPath, const char* fragmentPath)
+    Shader(const char* vertexPath, const char* fragmentPath) : _vertexPath(vertexPath), _fragmentPath(fragmentPath)
     {
-        std::string vShaderString = readShaderSource(vertexPath);
+        compileShaders();
+    }
+
+    void compileShaders() 
+    {
+        // Compile vertex shader
+        std::string vShaderString = readShaderSource(_vertexPath);
         const char* vShaderCode = vShaderString.c_str();
+        _vertexID = compileShader(vShaderCode, GL_VERTEX_SHADER);
 
-        std::string fShaderString = readShaderSource(fragmentPath);
+        // Compile fragment shader
+        std::string fShaderString = readShaderSource(_fragmentPath);
         const char* fShaderCode = fShaderString.c_str();
+        _fragmentID = compileShader(fShaderCode, GL_FRAGMENT_SHADER);
 
-        unsigned int vertex, fragment;
-        vertex = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertex, 1, &vShaderCode, NULL);
-        glCompileShader(vertex);
-        checkCompileErrors(vertex, "VERTEX");
-        
-        fragment = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragment, 1, &fShaderCode, NULL);
-        glCompileShader(fragment);
-        checkCompileErrors(fragment, "FRAGMENT");
-        
+        // Link shaders
         ID = glCreateProgram();
-        glAttachShader(ID, vertex);
-        glAttachShader(ID, fragment);
+        glAttachShader(ID, _vertexID);
+        glAttachShader(ID, _fragmentID);
         glLinkProgram(ID);
-
         checkCompileErrors(ID, "PROGRAM");
-        
-        glDeleteShader(vertex);
-        glDeleteShader(fragment);
+
+        // Detach shaders after linking (optional but often done)
+        glDetachShader(ID, _vertexID);
+        glDetachShader(ID, _fragmentID);
+    }
+
+    GLuint compileShader(const char* shaderCode, GLenum shaderType)
+    {
+        unsigned int shader = glCreateShader(shaderType);
+        glShaderSource(shader, 1, &shaderCode, NULL);
+        glCompileShader(shader);
+        checkCompileErrors(shader, shaderType == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT");
+        return shader;
+    }
+
+    void reload()
+    {
+        std::cout << "Reloading shader : " << _vertexPath << ", " << _fragmentPath << std::endl;
+        // Detach and delete old shaders
+        glDetachShader(ID, _vertexID);
+        glDetachShader(ID, _fragmentID);
+        glDeleteShader(_vertexID);
+        glDeleteShader(_fragmentID);
+
+        // Recompile shaders
+        compileShaders();
     }
 
     void use()

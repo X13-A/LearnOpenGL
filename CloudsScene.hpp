@@ -89,11 +89,13 @@ private:
     GLuint worleyTexture1;
     GLuint worleyTexture2;
     GLuint worleyTexture3;
+    GLuint blueNoiseTex;
+    GLuint heightMap;
     std::vector<glm::vec3> worleyPoints;
 
     // Clouds params
     float cloudBrightness = 1;
-    float cloudDensity = 0.25;
+    float cloudDensity = 0.2;
     float sunlightAbsorption = 0.15;
     float cloudScale1 = 80;
     float cloudScale2 = 40;
@@ -150,11 +152,19 @@ public:
         worleyPoints = generator.RepeatWorleyPoints(worleyPoints);
         worleyTexture3 = generator.ComputeWorleyTexture(worleyPoints, worleyRes);
 
+        // Fix this next time
+        Texture texLoader = Texture("./textures/blueNoise.jpg");
+        blueNoiseTex = texLoader.ID;
+
+        texLoader = Texture("./textures/perlinNoise.jpg");
+        heightMap = texLoader.ID;
+
         // Clouds
         cloudsPostProcess.setup(cloudShader, &frameBuffer);
 		cloud.loadModel("./models/Cube.obj");
 		cloud.translate(glm::vec3(0.5000f, 0.5000f, 0.5000));
-        cloud.scale(glm::vec3(150.000001, 15.000001, 150.000001));
+        cloud.setScale(glm::vec3(150.000001, 25.000001, 150.000001));
+        //cloud.setScale(glm::vec3(1));
 
         // Ray tracing plane
         rtxSphere.loadModel("./models/Sphere.obj");
@@ -186,6 +196,11 @@ public:
         cameraControls->update();
         rtxSphere.setPosition(camera.getPosition());
         
+        if (InputManager::getInstance().isKeyPressed(KeyboardKey::R))
+        {
+            cloudShader->reload();
+        }
+
         if (InputManager::getInstance().isKeyPressed(KeyboardKey::G))
         {
             worleyPoints = generator.RepeatWorleyPoints(generator.CreateWorleyPoints(points_n_1));
@@ -315,6 +330,14 @@ public:
         glBindTexture(GL_TEXTURE_3D, worleyTexture3);
         cloudShader->setInt("noiseTex3", 3);
 
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_2D, blueNoiseTex);
+        cloudShader->setInt("blueNoiseTex", 4);
+
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, heightMap);
+        cloudShader->setInt("heightMap", 5);
+
         // Cloud params
         cloudShader->setVec3("boundsMin", (cloud.getPosition() - cloud.getScale()));
         cloudShader->setVec3("boundsMax", (cloud.getPosition() + cloud.getScale()));
@@ -337,7 +360,7 @@ public:
         cloudShader->setVec3("phaseParams", phaseParams);
         cloudShader->setFloat("bottom_falloff", bottom_falloff);
         cloudShader->setFloat("top_falloff", top_falloff);
-
+        
         // Fullscreen params
         rtxSphere.draw(*cloudShader);
 
