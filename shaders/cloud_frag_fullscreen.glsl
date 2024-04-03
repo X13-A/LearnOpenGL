@@ -18,6 +18,8 @@ uniform float global_density;
 uniform sampler3D noiseTex1;
 uniform sampler3D noiseTex2;
 uniform sampler3D noiseTex3;
+uniform sampler2D blueNoiseTex;
+uniform sampler2D heightMap;
 
 uniform float global_scale1;
 uniform float global_scale2;
@@ -35,8 +37,32 @@ uniform float time;
 uniform float bottom_falloff;
 uniform float top_falloff;
 
+float min4(float a, float b, float c, float d)
+{
+	return min(min(a, b), min(c, d));
+}
+
 float sampleDensity(vec3 pos)
 {
+	float top = max(boundsMin.y, boundsMax.y);   // Y
+	float bottom = min(boundsMin.y, boundsMax.y);
+	float left = min(boundsMin.x, boundsMax.x);  // X
+	float right = max(boundsMin.x, boundsMax.x);
+	float front = min(boundsMin.z, boundsMax.z); // Z
+	float back = max(boundsMin.z, boundsMax.z);
+
+	float x = pos.x;
+	float y = pos.y;
+	float z = pos.z;
+
+
+	float borderDist = min4(distance(pos.x, left), distance(pos.x, right), distance(pos.z, front), distance(pos.z, back));
+	float boxHeight = abs(top - bottom);
+	float maxHeight = bottom + (3 * boxHeight / 4) + texture(heightMap, pos.xz / 500).r * boxHeight / 4;
+	float minHeight = top - (3 * boxHeight / 4) - texture(heightMap, pos.xz / 500).r * boxHeight / 4;
+	float fadePercentVertical = clamp(y / maxHeight, 0, 1) + clamp(y / minHeight, 0, 1);
+	float fadePercent = 1 - pow(fadePercentVertical, 4);
+
 	vec3 speed1 = vec3(time * global_speed1);
 	vec3 speed2 = vec3(time * global_speed2);
 	vec3 speed3 = vec3(time * global_speed3);
@@ -46,10 +72,7 @@ float sampleDensity(vec3 pos)
 	float density3 = length(texture(noiseTex3, (pos + speed3) / global_scale3).rgb);
 
 	float res = min(density1, density2) - density3;
-
-	//float top = max(boundsMin.y, boundsMax.y);
-	//float bottom = min(boundsMin.y, boundsMax.y);
-	//float y = pos.y;
+	res *= fadePercent;
 
 	//float progress = clamp((y - bottom) / (top - bottom), 0, 1);
 	return clamp(res, 0, 1);
@@ -112,10 +135,10 @@ float lightMarch(vec3 samplePos, vec3 lightDir)
 	return exp(-totalDensity * sunlightAbsorption);
 }
 
-vec2 sampleCloud(vec3 rayOrigin, vec3 rayDir, vec3 lightDir, float dstToBox, float dstInsideBox)
+vec2 sampleCloud(vec3 rayOrigin, vec3 rayDir, vec3 lightDir, float dstToBox, float dstInsideBox, float offset)
 {
-	float dstTravelled = 0;
-	float dstLimit = min(100, dstInsideBox); // TODO: Improve far distances
+	float dstTravelled = offset;
+	float dstLimit = min(10000, dstInsideBox); // TODO: Improve far distances
 	float baseStepSize = 0.5;
 
 	float transmittance = 1;
@@ -126,7 +149,7 @@ vec2 sampleCloud(vec3 rayOrigin, vec3 rayDir, vec3 lightDir, float dstToBox, flo
 	while (dstTravelled < dstLimit)
 	{
 		float stepSize = min(baseStepSize, dstLimit - dstTravelled); // TODO: Improve performance on far distances
-		if (transmittance < 0.1)
+		if (transmittance < 0.02)
 		{
 			break;
 		}
@@ -160,8 +183,11 @@ void main()
 
 	vec3 localLightDir = normalize(fragPos - lightPos);
 
+	// Offset ray randomly (improves rendering with low res noise textures) (not working)
+	float randomOffset = 0;
+
 	// Sample cloud density
-	vec2 sampleData = sampleCloud(cameraPos, rayDir, localLightDir, dstToBox, dstInsideBox);
+	vec2 sampleData = sampleCloud(cameraPos, rayDir, localLightDir, dstToBox, dstInsideBox, randomOffset);
 	float transmittance = sampleData.x;
 	float lightEnergy = sampleData.y;
 
@@ -176,9 +202,8 @@ void main()
 	backgroundColor += atmosphereColor;
 
 	// Add sun
-	float distToLight = distance(cameraPos, lightPos);
-	float flareIntensity = dot(rayDir, dirToLight);
-	flareIntensity = max(0, pow(flareIntensity, 512));
+	float flareIntensity = dot(normalize(rayDir), normalize(dirToLight));
+	flareIntensity = pow(max(0, flareIntensity), 512);
 	vec4 sunColor = vec4(1) * flareIntensity;
 	backgroundColor += vec4(vec3(flareIntensity), 0) * sunColor;
 
@@ -187,7 +212,6 @@ void main()
 	{
 		vec4 cloudColor = vec4(1);
 		cloudColor *= lightEnergy * global_brightness;
-
 		FragColor = backgroundColor * transmittance + cloudColor;
 		return;
 	}
